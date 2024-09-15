@@ -18,7 +18,7 @@ MonoBehaviour:
   m_GUID: f30f789d6e66544d5a2949dff8d7cf77
   m_SerializeEntries:
   - m_GUID: acae182a32fbd4360b9c6a8332c8435c
-    m_Address: Assets/Config/GameSettings.asset
+    m_Address: Assets/Config/GameSettingsConfig.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -29,6 +29,16 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e9ec73fde60c94873a259ba6cb9c6985
     m_Address: Assets/Scenes/MainScene.unity
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cd18e93ddfb554ea39ff2ecab89f5d71
+    m_Address: Assets/Config/LetterConfig.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3aac85eabf1a24edeb8c06ffc048ebbd
+    m_Address: Assets/Config/words.txt
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

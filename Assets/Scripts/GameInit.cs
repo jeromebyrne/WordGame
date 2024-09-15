@@ -7,10 +7,13 @@ using UnityEngine.SceneManagement;
 public class GameInit : MonoBehaviour
 {
     [SerializeField] private string _gameSettingsAddress;
+    [SerializeField] private string _letterConfigAddress;
+    [SerializeField] private string _wordFileAddress;
 
     private void Awake()
     {
-        GameSettingsManager.Initialize(_gameSettingsAddress);
+        GameSettingsConfigManager.Initialize(_gameSettingsAddress);
+        WordConfigManager.Initialize(_letterConfigAddress, _wordFileAddress);
     }
 
     private void Start()
@@ -20,6 +23,7 @@ public class GameInit : MonoBehaviour
 
     public void LoadMainScene()
     {
+        // TODO: we should be waiting for the configs to load before switching scenes
         Addressables.LoadSceneAsync("Assets/Scenes/MainScene.unity", LoadSceneMode.Single).Completed += OnMainSceneLoaded;
     }
 

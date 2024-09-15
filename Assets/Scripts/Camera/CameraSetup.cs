@@ -6,23 +6,30 @@ public class CameraSetup : MonoBehaviour
 
     private void Awake()
     {
-        Vector2 baseResolution = GameSettingsManager.GameSettings._baseScreenResolution;
+        AdjustView();
+    }
+
+    void AdjustView()
+    {
+        Vector2 baseResolution = GameSettingsConfigManager.GameSettings._baseScreenResolution;
 
         float targetAspect = baseResolution.x / baseResolution.y;
         float windowAspect = (float)Screen.width / (float)Screen.height;
-        float scaleWidth = targetAspect / windowAspect;
-        float halfWidth = baseResolution.x * 0.5f;
 
-        float totalScale = 0.07f;
+        // Calculate the orthographic size to ensure it always fits the height
+        float scaleHeight = windowAspect / targetAspect;
 
-        // Ensure the camera adjusts to fit width and expands height
-        if (scaleWidth >= 1.0f)
+        float scaleOverride = 0.0105f;
+
+        // TODO: I should actually take the board grid dimensions into consideration
+
+        if (scaleHeight >= 1.0f)
         {
-            _camera.orthographicSize = halfWidth * scaleWidth * totalScale;
+            _camera.orthographicSize = baseResolution.y / 2 * scaleOverride;
         }
         else
         {
-            _camera.orthographicSize = halfWidth * totalScale;
+            _camera.orthographicSize = (baseResolution.y / 2 * scaleOverride) / scaleHeight;
         }
     }
 }

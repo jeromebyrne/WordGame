@@ -1,0 +1,118 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50a0414e358244657b76f373e5b9fcb7, type: 3}
+  m_Name: LetterConfig
+  m_EditorClassIdentifier: 
+  _a:
+    _letter: 97
+    _points: 1
+    _wordBagCount: 9
+  _b:
+    _letter: 98
+    _points: 3
+    _wordBagCount: 2
+  _c:
+    _letter: 67
+    _points: 3
+    _wordBagCount: 2
+  _d:
+    _letter: 100
+    _points: 2
+    _wordBagCount: 4
+  _e:
+    _letter: 101
+    _points: 1
+    _wordBagCount: 12
+  _f:
+    _letter: 102
+    _points: 4
+    _wordBagCount: 2
+  _g:
+    _letter: 103
+    _points: 2
+    _wordBagCount: 3
+  _h:
+    _letter: 104
+    _points: 4
+    _wordBagCount: 2
+  _i:
+    _letter: 105
+    _points: 1
+    _wordBagCount: 9
+  _j:
+    _letter: 106
+    _points: 8
+    _wordBagCount: 1
+  _k:
+    _letter: 107
+    _points: 5
+    _wordBagCount: 1
+  _l:
+    _letter: 108
+    _points: 1
+    _wordBagCount: 4
+  _m:
+    _letter: 109
+    _points: 3
+    _wordBagCount: 2
+  _n:
+    _letter: 110
+    _points: 1
+    _wordBagCount: 6
+  _o:
+    _letter: 111
+    _points: 1
+    _wordBagCount: 8
+  _p:
+    _letter: 112
+    _points: 3
+    _wordBagCount: 2
+  _q:
+    _letter: 113
+    _points: 10
+    _wordBagCount: 1
+  _r:
+    _letter: 114
+    _points: 1
+    _wordBagCount: 6
+  _s:
+    _letter: 115
+    _points: 1
+    _wordBagCount: 4
+  _t:
+    _letter: 116
+    _points: 1
+    _wordBagCount: 6
+  _u:
+    _letter: 117
+    _points: 1
+    _wordBagCount: 4
+  _v:
+    _letter: 118
+    _points: 4
+    _wordBagCount: 2
+  _w:
+    _letter: 119
+    _points: 4
+    _wordBagCount: 2
+  _x:
+    _letter: 120
+    _points: 8
+    _wordBagCount: 1
+  _y:
+    _letter: 121
+    _points: 4
+    _wordBagCount: 2
+  _z:
+    _letter: 122
+    _points: 10
+    _wordBagCount: 1

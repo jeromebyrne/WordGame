@@ -152,7 +152,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e9cbb2519c7814e1c8c60c90a23a54fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _gameSettingsAddress: Assets/Config/GameSettings.asset
+  _gameSettingsAddress: Assets/Config/GameSettingsConfig.asset
+  _letterConfigAddress: Assets/Config/LetterConfig.asset
+  _wordFileAddress: Assets/Config/words.txt
 --- !u!4 &1789224934
 Transform:
   m_ObjectHideFlags: 0

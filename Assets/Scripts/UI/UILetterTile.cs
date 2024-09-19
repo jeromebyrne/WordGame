@@ -15,6 +15,8 @@ public class UILetterTile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
     static readonly Color _selectedColor = new Color(0.72f, 0.36f, 0.125f, 0.5f);
     static readonly Color _unselectedColor = new Color(0.72f, 0.36f, 0.125f, 1.0f);
 
+    public RectTransform RectTransform { get { return _rectTransform; } }
+
     private Canvas _canvas;
     private CanvasGroup _canvasGroup;
 
@@ -23,6 +25,7 @@ public class UILetterTile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
     private void Awake()
     {
         _canvas = GetComponentInParent<Canvas>();
+
 
         _canvasGroup = GetComponent<CanvasGroup>();
         if (_canvasGroup == null)
@@ -60,14 +63,11 @@ public class UILetterTile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
         Vector2 localPoint;
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
             _rectTransform.parent as RectTransform,
-        eventData.position,
-            _canvas.worldCamera,
+            eventData.position,
+            null,
             out localPoint);
 
-        // Update the anchored position
         _rectTransform.anchoredPosition = localPoint;
-
-        // _rectTransform.anchoredPosition += eventData.delta / canvas.scaleFactor;
     }
 
     public void OnEndDrag(PointerEventData eventData)

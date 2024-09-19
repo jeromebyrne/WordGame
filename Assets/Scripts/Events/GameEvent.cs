@@ -65,14 +65,16 @@ public class UILetterTileEndDragEvent : GameEvent
     }
 }
 
-public class PlayerLettersAssigned : GameEvent
+public class PlayerLetterAssigned : GameEvent
 {
     public PlayerState PlayerState { get; private set; }
+    public SingleLetterInfo LetterInfo { get; private set; }
 
-    public static PlayerLettersAssigned Get(PlayerState playerState)
+    public static PlayerLetterAssigned Get(PlayerState playerState, SingleLetterInfo letterInfo)
     {
-        var evt = Get<PlayerLettersAssigned>();
+        var evt = Get<PlayerLetterAssigned>();
         evt.PlayerState = playerState;
+        evt.LetterInfo = letterInfo;
         return evt;
     }
 

@@ -7,13 +7,13 @@ public class GameManager : MonoBehaviour
     private PlayerState _playerOneState = new PlayerState(1);
     private PlayerState _playerTwoState = new PlayerState(2);
     private LetterBag _letterBag = new LetterBag();
-
-    private const int kMaxLettersPerPlayer = 7;
+    [SerializeField] private UILetterTileHolder _playerTileHolder;
 
     void Start()
     {
         _letterBag.AddAllLetters();
 
+        _playerTileHolder.Init();
         AssignInitialLettersToPlayers();
     }
 
@@ -24,7 +24,8 @@ public class GameManager : MonoBehaviour
     void AssignInitialLettersToPlayers()
     {
         // assumption is 2 players per game
-        for (int i = 0; i < kMaxLettersPerPlayer * 2; i++)
+        int numLettersPerPlayer = GameSettingsConfigManager.GameSettings._maxPlayerLetters;
+        for (int i = 0; i < numLettersPerPlayer * 2; i++)
         {
             if (i % 2 == 0)
             {
@@ -32,21 +33,19 @@ public class GameManager : MonoBehaviour
                 SingleLetterInfo randomLetter = _letterBag.PickRandomLetter();
                 _playerOneState.AssignLetter(randomLetter);
 
+                var evt = PlayerLetterAssigned.Get(_playerOneState, randomLetter);
+                GameEventHandler.Instance.TriggerEvent(evt);
+
             }
             else
             {
                 // player 2
                 SingleLetterInfo randomLetter = _letterBag.PickRandomLetter();
                 _playerTwoState.AssignLetter(randomLetter);
+
+                var evt = PlayerLetterAssigned.Get(_playerTwoState, randomLetter);
+                GameEventHandler.Instance.TriggerEvent(evt);
             }
         }
-
-        // post for player 1
-        var evt = PlayerLettersAssigned.Get(_playerOneState);
-        GameEventHandler.Instance.TriggerEvent(evt);
-
-        // post for player 2
-        evt = PlayerLettersAssigned.Get(_playerTwoState);
-        GameEventHandler.Instance.TriggerEvent(evt);
     }
 }

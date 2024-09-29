@@ -39,11 +39,11 @@ public class LetterConfig : ScriptableObject
     public SingleLetterInfo _y;
     public SingleLetterInfo _z;
 
-    private List<SingleLetterInfo> _cachedLetterList;
+    private List<SingleLetterInfo> _cachedLetterList = null;
 
     public List<SingleLetterInfo> GetAllLetters()
     {
-        if (_cachedLetterList == null)
+        if (_cachedLetterList == null || _cachedLetterList.Count < 1)
         {
             _cachedLetterList = new List<SingleLetterInfo>
             {

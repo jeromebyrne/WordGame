@@ -65,14 +65,14 @@ public class UILetterTileEndDragEvent : GameEvent
     }
 }
 
-public class PlayerLetterAssigned : GameEvent
+public class PlayerLetterAssignedEvent : GameEvent
 {
     public PlayerState PlayerState { get; private set; }
     public SingleLetterInfo LetterInfo { get; private set; }
 
-    public static PlayerLetterAssigned Get(PlayerState playerState, SingleLetterInfo letterInfo)
+    public static PlayerLetterAssignedEvent Get(PlayerState playerState, SingleLetterInfo letterInfo)
     {
-        var evt = Get<PlayerLetterAssigned>();
+        var evt = Get<PlayerLetterAssignedEvent>();
         evt.PlayerState = playerState;
         evt.LetterInfo = letterInfo;
         return evt;
@@ -81,5 +81,25 @@ public class PlayerLetterAssigned : GameEvent
     public override void Reset()
     {
         PlayerState = null;
+    }
+}
+
+public class SendTileToHolderEvent : GameEvent
+{
+    public int PlayerIndex { get; private set; }
+    public UILetterTile Tile { get; private set; }
+
+    public static SendTileToHolderEvent Get(int playerIndex, UILetterTile tile)
+    {
+        var evt = Get<SendTileToHolderEvent>();
+        evt.PlayerIndex = playerIndex;
+        evt.Tile = tile;
+        return evt;
+    }
+
+    public override void Reset()
+    {
+        PlayerIndex = -1;
+        Tile = null;
     }
 }

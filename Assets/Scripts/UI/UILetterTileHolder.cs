@@ -40,12 +40,14 @@ public class UILetterTileHolder : MonoBehaviour
 
     private void OnEnable()
     {
-        GameEventHandler.Instance.Subscribe<PlayerLetterAssigned>(OnPlayerLetterAssigned);
+        GameEventHandler.Instance.Subscribe<PlayerLetterAssignedEvent>(OnPlayerLetterAssigned);
+        GameEventHandler.Instance.Subscribe<SendTileToHolderEvent>(OnTileReturnRequest);
     }
 
     private void OnDisable()
     {
-        GameEventHandler.Instance.Unsubscribe<PlayerLetterAssigned>(OnPlayerLetterAssigned);
+        GameEventHandler.Instance.Unsubscribe<PlayerLetterAssignedEvent>(OnPlayerLetterAssigned);
+        GameEventHandler.Instance.Unsubscribe<SendTileToHolderEvent>(OnTileReturnRequest);
     }
 
     void CreateTilePositions(int playerIndex)
@@ -66,7 +68,7 @@ public class UILetterTileHolder : MonoBehaviour
 
         float width = corners[2].x - corners[0].x;
         float spacingX = width / (numTiles + 1);
-        float yOffset = 20.0f;
+        float yOffset = 50.0f;
 
         float centerY = (corners[0].y + corners[1].y) / 2f;
 
@@ -87,14 +89,14 @@ public class UILetterTileHolder : MonoBehaviour
 
         UILetterTile ltComponent = newInstance.GetComponent<UILetterTile>();
 
-        ltComponent.Populate(letterInfo);
+        ltComponent.Populate(letterInfo, playerIndex);
 
         newInstance.SetActive(false);
 
         return newInstance;
     }
 
-    private void OnPlayerLetterAssigned(PlayerLetterAssigned evt)
+    private void OnPlayerLetterAssigned(PlayerLetterAssignedEvent evt)
     {
         if (!HasAvailableSlotForTile(evt.PlayerState.PlayerIndex))
         {
@@ -105,6 +107,20 @@ public class UILetterTileHolder : MonoBehaviour
         GameObject tileVisual = CreateTile(evt.LetterInfo, evt.PlayerState.PlayerIndex); // TODO: ideally we would pool these
 
         AssignTileToNextAvailableSlot(evt.PlayerState.PlayerIndex, tileVisual);
+    }
+
+    private void OnTileReturnRequest(SendTileToHolderEvent evt)
+    {
+        var tilePlacements = _tilePlacementPlayerMap[evt.PlayerIndex];
+
+        foreach (var tuple in tilePlacements)
+        {
+            if (tuple.Item2 == evt.Tile.gameObject)
+            {
+                evt.Tile.transform.localPosition = tuple.Item1;
+                return;
+            }
+        }
     }
 
     bool HasAvailableSlotForTile(int playerIndex)
@@ -135,7 +151,7 @@ public class UILetterTileHolder : MonoBehaviour
                 tpi[i] = tuple;
 
                 letterTile.SetActive(true);
-                letterTile.transform.localPosition = new Vector3(tuple.Item1.x, tuple.Item1.y, 0.0f);
+                letterTile.transform.localPosition = tuple.Item1;
                 return;
             }
         }

@@ -1,5 +1,4 @@
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -11,8 +10,8 @@ public class UILetterTile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
     [SerializeField] RectTransform _rectTransform;
     [SerializeField] Image _image;
 
-    static readonly Vector3 _selectedScale = new Vector3(1.75f, 1.75f, 1.0f);
-    static readonly Color _selectedColor = new Color(0.72f, 0.36f, 0.125f, 0.5f);
+    static readonly Vector3 _selectedScale = new Vector3(1.1f, 1.1f, 1.1f);
+    static readonly Color _selectedColor = new Color(0.72f, 0.36f, 0.125f, 0.8f);
     static readonly Color _unselectedColor = new Color(0.72f, 0.36f, 0.125f, 1.0f);
 
     public RectTransform RectTransform { get { return _rectTransform; } }
@@ -20,7 +19,7 @@ public class UILetterTile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
     private Canvas _canvas;
     private CanvasGroup _canvasGroup;
 
-    private SingleLetterInfo _letterInfo;
+    public int PlayerIndex { get; private set; }
 
     private void Awake()
     {
@@ -38,11 +37,12 @@ public class UILetterTile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
     {
     }
 
-    public void Populate(SingleLetterInfo letterInfo)
+    // TODO: shouldn't pass SingleLetterInfo, just integers
+    public void Populate(SingleLetterInfo letterInfo, int playerIndex)
     {
-        _letterInfo = letterInfo;
-        _letterLabel.text = letterInfo._letter.ToString();
+        _letterLabel.text = letterInfo._letter.ToString().ToUpper();
         _pointsLabel.text = letterInfo._points.ToString();
+        PlayerIndex = playerIndex;
     }
 
     public void OnBeginDrag(PointerEventData eventData)

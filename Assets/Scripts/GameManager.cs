@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -8,6 +6,7 @@ public class GameManager : MonoBehaviour
     private PlayerState _playerTwoState = new PlayerState(2);
     private LetterBag _letterBag = new LetterBag();
     [SerializeField] private UILetterTileHolder _playerTileHolder;
+    [SerializeField] private GameBoard _gameBoard;
 
     void Start()
     {
@@ -15,6 +14,8 @@ public class GameManager : MonoBehaviour
 
         _playerTileHolder.Init();
         AssignInitialLettersToPlayers();
+
+        _gameBoard.Init();
     }
 
     void Update()
@@ -33,7 +34,7 @@ public class GameManager : MonoBehaviour
                 SingleLetterInfo randomLetter = _letterBag.PickRandomLetter();
                 _playerOneState.AssignLetter(randomLetter);
 
-                var evt = PlayerLetterAssigned.Get(_playerOneState, randomLetter);
+                var evt = PlayerLetterAssignedEvent.Get(_playerOneState, randomLetter);
                 GameEventHandler.Instance.TriggerEvent(evt);
 
             }
@@ -43,7 +44,7 @@ public class GameManager : MonoBehaviour
                 SingleLetterInfo randomLetter = _letterBag.PickRandomLetter();
                 _playerTwoState.AssignLetter(randomLetter);
 
-                var evt = PlayerLetterAssigned.Get(_playerTwoState, randomLetter);
+                var evt = PlayerLetterAssignedEvent.Get(_playerTwoState, randomLetter);
                 GameEventHandler.Instance.TriggerEvent(evt);
             }
         }

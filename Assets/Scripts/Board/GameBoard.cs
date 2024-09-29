@@ -1,12 +1,25 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class GameBoard : MonoBehaviour
 {
+    struct BoardSlotState
+    {
+        public BoardSlotState(bool occupied, Vector2Int boardIndex)
+        {
+            IsOccupied = occupied;
+            OccupiedLetter = new SingleLetterInfo();
+            BoardIndex = boardIndex;
+        }
+
+        public bool IsOccupied { get; set; }
+        public SingleLetterInfo OccupiedLetter { get; private set; }
+        public Vector2Int BoardIndex { get; private set; }
+    }
+
     [SerializeField] BoardVisual _boardVisual = null;
+
+    private List<List<BoardSlotState>> _boardSlotStates = null;
 
     private UILetterTile _draggedUILetterTile = null; // only allow dragging 1 tile at a time for simplicity
 
@@ -22,23 +35,38 @@ public class GameBoard : MonoBehaviour
         GameEventHandler.Instance.Unsubscribe<UILetterTileEndDragEvent>(OnUITileEndDrag);
     }
 
-    void Start()
+    public void Init()
     {
-        // TODO: Move this to its own function and have the GameManager call it so we can control init order
         var boardGridDimensions = GameSettingsConfigManager.GameSettings._boardDimensions;
         _boardVisual.SetGridDimensions(boardGridDimensions);
+
+        CreateSlots();
     }
 
-    void Update()
+    private void CreateSlots()
     {
-        
+        _boardSlotStates = new List<List<BoardSlotState>>();
+
+        Vector2Int boardDImensions = GameSettingsConfigManager.GameSettings._boardDimensions;
+
+        for (int i = 0; i < boardDImensions.x; i++)
+        {
+            _boardSlotStates.Add(new List<BoardSlotState>());
+            for (int j = 0; j < boardDImensions.y; j++)
+            {
+                // BoardSlotState slotState
+                BoardSlotState slotState = new BoardSlotState(false, new Vector2Int(j,i));
+                _boardSlotStates[i].Add(slotState);
+            }
+        }
     }
 
     private void OnUITileStartDrag(UILetterTileStartDragEvent evt)
     {
-        if (evt.LetterTile != _draggedUILetterTile)
+        if (_draggedUILetterTile != null && evt.LetterTile != _draggedUILetterTile)
         {
-            // TODO: send to the letter holder
+            var postEvt = SendTileToHolderEvent.Get(evt.LetterTile.PlayerIndex, evt.LetterTile);
+            GameEventHandler.Instance.TriggerEvent(postEvt);
         }
 
         _draggedUILetterTile = evt.LetterTile;
@@ -52,57 +80,39 @@ public class GameBoard : MonoBehaviour
         // if the UI letter tile is within the boards world space then place it on the nearest tile
         // otherwise send it back to the tile holder
 
-        if (IsUILetterTileIntersecting(evt.LetterTile, _boardVisual.BoardSpriteRenderer))
+        if (_boardVisual.IsUILetterTileIntersecting(evt.LetterTile))
         {
             UnityEngine.Debug.Log("Tile is intersecting board");
+
+            PlaceTile(evt.LetterTile.PlayerIndex, evt.LetterTile);
         }
         else
         {
             UnityEngine. Debug.Log("Tile is NOT intersecting board");
-
-            // send this tile back to its holder
+            var postEvt = SendTileToHolderEvent.Get(evt.LetterTile.PlayerIndex, evt.LetterTile);
+            GameEventHandler.Instance.TriggerEvent(postEvt);
         }
 
         _draggedUILetterTile = null;
     }
 
-    private bool IsUILetterTileIntersecting(UILetterTile tile, SpriteRenderer boardSpriteRenderer)
+
+    private void PlaceTile(int playerIndex, UILetterTile uiTile)
     {
-        // Check if the tile's RectTransform is null
-        var rectTransform = tile.RectTransform;
-        if (rectTransform == null)
+        // Get world pos of UITile
+        Vector2 worldPos = Camera.main.ScreenToWorldPoint(uiTile.RectTransform.position);
+
+        Bounds spriteBounds = _boardVisual.VisualBounds;
+
+        if (!spriteBounds.Contains(worldPos))
         {
-            return false;
+            return;
         }
 
-        // Convert UI element corners to world space
-        Vector3[] uiCorners = new Vector3[4];
-        rectTransform.GetWorldCorners(uiCorners);
+        Vector2Int slotIndex = _boardVisual.GetNearestSlotIndex(worldPos);
 
-        // Convert each UI corner from screen space to world space coordinates
-        for (int i = 0; i < uiCorners.Length; i++)
-        {
-            uiCorners[i] = Camera.main.ScreenToWorldPoint(uiCorners[i]);
-        }
+        // TODO: check if it's valid + update data state
+        _boardVisual.EnableTile(slotIndex.x, slotIndex.y);
 
-        // Get the world space bounds of the SpriteRenderer
-        Bounds spriteBounds = boardSpriteRenderer.bounds;
-
-        // Adjust the z-coordinate of uiCorners to match the sprite's z-coordinate
-        for (int i = 0; i < uiCorners.Length; i++)
-        {
-            uiCorners[i].z = spriteBounds.center.z; // Set z value to the sprite's z position
-        }
-
-        // Check if any of the adjusted UI corners are within the sprite's world bounds
-        for (int i = 0; i < uiCorners.Length; i++)
-        {
-            if (spriteBounds.Contains(uiCorners[i]))
-            {
-                return true; // Return true if any corner is inside the sprite's bounds
-            }
-        }
-
-        return false; // No intersection detected
     }
 }

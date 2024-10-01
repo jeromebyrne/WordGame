@@ -10,31 +10,25 @@ public class UILetterTile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
     [SerializeField] RectTransform _rectTransform;
     [SerializeField] Image _image;
 
-    static readonly Vector3 _selectedScale = new Vector3(1.1f, 1.1f, 1.1f);
-    static readonly Color _selectedColor = new Color(0.72f, 0.36f, 0.125f, 0.8f);
+    static readonly Vector3 _selectedScale = new Vector3(0.75f, 0.75f, 1.0f);
+    static readonly Color _selectedColor = new Color(0.72f, 0.36f, 0.125f, 0.6f);
     static readonly Color _unselectedColor = new Color(0.72f, 0.36f, 0.125f, 1.0f);
 
     public RectTransform RectTransform { get { return _rectTransform; } }
 
-    private Canvas _canvas;
     private CanvasGroup _canvasGroup;
 
     public int PlayerIndex { get; private set; }
 
+    public SingleLetterInfo LetterInfo { get; private set; }
+
     private void Awake()
     {
-        _canvas = GetComponentInParent<Canvas>();
-
-
         _canvasGroup = GetComponent<CanvasGroup>();
         if (_canvasGroup == null)
         {
             _canvasGroup = gameObject.AddComponent<CanvasGroup>();
         }
-    }
-
-    private void Start()
-    {
     }
 
     // TODO: shouldn't pass SingleLetterInfo, just integers
@@ -43,6 +37,7 @@ public class UILetterTile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
         _letterLabel.text = letterInfo._letter.ToString().ToUpper();
         _pointsLabel.text = letterInfo._points.ToString();
         PlayerIndex = playerIndex;
+        LetterInfo = letterInfo;
     }
 
     public void OnBeginDrag(PointerEventData eventData)

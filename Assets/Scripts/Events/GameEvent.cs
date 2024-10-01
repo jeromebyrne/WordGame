@@ -103,3 +103,23 @@ public class SendTileToHolderEvent : GameEvent
         Tile = null;
     }
 }
+
+public class UITilePlacedonBoardEvent : GameEvent
+{
+    public int PlayerIndex { get; private set; }
+    public UILetterTile Tile { get; private set; }
+
+    public static UITilePlacedonBoardEvent Get(int playerIndex, UILetterTile tile)
+    {
+        var evt = Get<UITilePlacedonBoardEvent>();
+        evt.PlayerIndex = playerIndex;
+        evt.Tile = tile;
+        return evt;
+    }
+
+    public override void Reset()
+    {
+        PlayerIndex = -1;
+        Tile = null;
+    }
+}

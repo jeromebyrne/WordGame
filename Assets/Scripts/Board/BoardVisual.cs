@@ -92,8 +92,12 @@ public class BoardVisual : MonoBehaviour
         _letterTiles[x][y].gameObject.SetActive(true);
     }
 
-    public bool IsUILetterTileIntersecting(UILetterTile tile)
+    public bool IsWorldPositionIntersectingBoard(Vector3 worldPosition)
     {
+        Bounds spriteBounds = _boardSprite.bounds;
+
+        return spriteBounds.Contains(worldPosition);
+        /*
         var rectTransform = tile.RectTransform;
         if (rectTransform == null)
         {
@@ -105,7 +109,7 @@ public class BoardVisual : MonoBehaviour
 
         for (int i = 0; i < uiCorners.Length; i++)
         {
-            uiCorners[i] = Camera.main.ScreenToWorldPoint(uiCorners[i]);
+            uiCorners[i] = Camera.main.ScreenToWorldPoint(tile.transform.position);
         }
 
         Bounds spriteBounds = _boardSprite.bounds;
@@ -124,34 +128,17 @@ public class BoardVisual : MonoBehaviour
         }
 
         return false;
+        */
     }
 
-    public Vector2Int GetNearestSlotIndex(Vector3 position)
+    public Vector2Int GetNearestSlotIndex(Vector3 worldPosition)
     {
-        /*
-        for (int i = 0; i < _letterTiles.Count; i++)
-        {
-            for (int j = 0; j < _letterTiles[i].Count; j++)
-            {
-                Bounds spriteBounds = _letterTiles[i][j].VisualBounds;
-
-                if (spriteBounds.Contains(position))
-                {
-                    return _letterTiles[i][j].GridIndex;
-                }
-            }
-        }
-
-        Debug.Log("Unable to find slot based on position");
-        return new Vector2Int(99999,99999);
-        */
-
         int rows = GameSettingsConfigManager.GameSettings._boardDimensions.x;
         int columns = GameSettingsConfigManager.GameSettings._boardDimensions.y;
 
         Bounds spriteBounds = _boardSprite.bounds;
 
-        Vector3 localPosition = position - spriteBounds.min;
+        Vector3 localPosition = worldPosition - spriteBounds.min;
 
         int column = Mathf.FloorToInt(localPosition.x / SlotWidth);
         int row = Mathf.FloorToInt(localPosition.y / SlotHeight);
@@ -166,6 +153,6 @@ public class BoardVisual : MonoBehaviour
             Debug.Log($"World position corresponds to tile index: {index} (row: {row}, column: {column})");
         }
 
-        return new Vector2Int(row, column);
+        return new Vector2Int(row, column); // TODO: don't do new
     }
 }

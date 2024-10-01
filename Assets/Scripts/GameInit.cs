@@ -10,20 +10,31 @@ public class GameInit : MonoBehaviour
     [SerializeField] private string _letterConfigAddress;
     [SerializeField] private string _wordFileAddress;
 
+    private bool _hasStartedLoadingMainScene = false;
+
     private void Awake()
     {
         GameSettingsConfigManager.Initialize(_gameSettingsAddress);
         WordConfigManager.Initialize(_letterConfigAddress, _wordFileAddress);
     }
 
-    private void Start()
+    private void Update()
     {
-        LoadMainScene();
+        if (_hasStartedLoadingMainScene)
+        {
+            return;
+        }
+
+        if (GameSettingsConfigManager.IsInitialized &&
+            WordConfigManager.IsInitialized)
+        {
+            LoadMainScene();
+            _hasStartedLoadingMainScene = true;
+        }
     }
 
     public void LoadMainScene()
     {
-        // TODO: we should be waiting for the configs to load before switching scenes
         Addressables.LoadSceneAsync("Assets/Scenes/MainScene.unity", LoadSceneMode.Single).Completed += OnMainSceneLoaded;
     }
 

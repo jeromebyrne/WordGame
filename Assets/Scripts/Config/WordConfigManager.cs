@@ -6,14 +6,14 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 public static class WordConfigManager
 {
     private static LetterConfig _letterConfig;
-    private static bool _isInitialized;
+    public static bool IsInitialized { get; private set; }
     private static HashSet<string> _wordSet;
 
     public static LetterConfig LetterConfig
     {
         get
         {
-            if (!_isInitialized)
+            if (!IsInitialized)
             {
                 Debug.LogError("LetterConfig not initialized. Ensure Initialize is called.");
             }
@@ -23,7 +23,7 @@ public static class WordConfigManager
 
     public static void Initialize(string letterDataAddress, string wordFileAddress)
     {
-        if (_isInitialized) return;
+        if (IsInitialized) return;
 
         Addressables.LoadAssetAsync<LetterConfig>(letterDataAddress).Completed += OnLetterConfigLoaded;
         Addressables.LoadAssetAsync<TextAsset>(wordFileAddress).Completed += OnWordFileLoaded;
@@ -55,7 +55,7 @@ public static class WordConfigManager
         if (handle.Status == AsyncOperationStatus.Succeeded)
         {
             _letterConfig = handle.Result;
-            _isInitialized = true;
+            IsInitialized = true;
         }
         else
         {
@@ -65,6 +65,12 @@ public static class WordConfigManager
 
     public static bool IsValidWord(string word)
     {
+        if (word.Length < 2)
+        {
+            Debug.Log("Word must be at least 2 letters long");
+            return false;
+        }
+
         return _wordSet.Contains(word.ToLower());
     }
 }

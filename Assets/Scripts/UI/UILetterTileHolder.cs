@@ -42,12 +42,14 @@ public class UILetterTileHolder : MonoBehaviour
     {
         GameEventHandler.Instance.Subscribe<PlayerLetterAssignedEvent>(OnPlayerLetterAssigned);
         GameEventHandler.Instance.Subscribe<SendTileToHolderEvent>(OnTileReturnRequest);
+        GameEventHandler.Instance.Subscribe<UITilePlacedonBoardEvent>(OnTilePlaced);
     }
 
     private void OnDisable()
     {
         GameEventHandler.Instance.Unsubscribe<PlayerLetterAssignedEvent>(OnPlayerLetterAssigned);
         GameEventHandler.Instance.Unsubscribe<SendTileToHolderEvent>(OnTileReturnRequest);
+        GameEventHandler.Instance.Unsubscribe<UITilePlacedonBoardEvent>(OnTilePlaced);
     }
 
     void CreateTilePositions(int playerIndex)
@@ -121,6 +123,14 @@ public class UILetterTileHolder : MonoBehaviour
                 return;
             }
         }
+    }
+
+    private void OnTilePlaced(UITilePlacedonBoardEvent evt)
+    {
+        // For now just disable the tile
+        // when we commit the tile later we can null out the GameObject
+
+        evt.Tile.gameObject.SetActive(false);
     }
 
     bool HasAvailableSlotForTile(int playerIndex)

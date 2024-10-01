@@ -1,25 +1,13 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class GameBoard : MonoBehaviour
 {
-    struct BoardSlotState
-    {
-        public BoardSlotState(bool occupied, Vector2Int boardIndex)
-        {
-            IsOccupied = occupied;
-            OccupiedLetter = new SingleLetterInfo();
-            BoardIndex = boardIndex;
-        }
-
-        public bool IsOccupied { get; set; }
-        public SingleLetterInfo OccupiedLetter { get; private set; }
-        public Vector2Int BoardIndex { get; private set; }
-    }
-
     [SerializeField] BoardVisual _boardVisual = null;
 
-    private List<List<BoardSlotState>> _boardSlotStates = null;
+    private BoardState _boardState = null;
 
     private UILetterTile _draggedUILetterTile = null; // only allow dragging 1 tile at a time for simplicity
 
@@ -40,25 +28,7 @@ public class GameBoard : MonoBehaviour
         var boardGridDimensions = GameSettingsConfigManager.GameSettings._boardDimensions;
         _boardVisual.SetGridDimensions(boardGridDimensions);
 
-        CreateSlots();
-    }
-
-    private void CreateSlots()
-    {
-        _boardSlotStates = new List<List<BoardSlotState>>();
-
-        Vector2Int boardDImensions = GameSettingsConfigManager.GameSettings._boardDimensions;
-
-        for (int i = 0; i < boardDImensions.x; i++)
-        {
-            _boardSlotStates.Add(new List<BoardSlotState>());
-            for (int j = 0; j < boardDImensions.y; j++)
-            {
-                // BoardSlotState slotState
-                BoardSlotState slotState = new BoardSlotState(false, new Vector2Int(j,i));
-                _boardSlotStates[i].Add(slotState);
-            }
-        }
+        _boardState = new BoardState(GameSettingsConfigManager.GameSettings._boardDimensions);
     }
 
     private void OnUITileStartDrag(UILetterTileStartDragEvent evt)
@@ -80,7 +50,9 @@ public class GameBoard : MonoBehaviour
         // if the UI letter tile is within the boards world space then place it on the nearest tile
         // otherwise send it back to the tile holder
 
-        if (_boardVisual.IsUILetterTileIntersecting(evt.LetterTile))
+        Vector2 worldPos = Camera.main.ScreenToWorldPoint(evt.LetterTile.RectTransform.position);
+
+        if (_boardVisual.IsWorldPositionIntersectingBoard(worldPos))
         {
             UnityEngine.Debug.Log("Tile is intersecting board");
 
@@ -102,17 +74,140 @@ public class GameBoard : MonoBehaviour
         // Get world pos of UITile
         Vector2 worldPos = Camera.main.ScreenToWorldPoint(uiTile.RectTransform.position);
 
-        Bounds spriteBounds = _boardVisual.VisualBounds;
-
-        if (!spriteBounds.Contains(worldPos))
+        if (!_boardVisual.IsWorldPositionIntersectingBoard(worldPos))
         {
             return;
         }
 
         Vector2Int slotIndex = _boardVisual.GetNearestSlotIndex(worldPos);
 
-        // TODO: check if it's valid + update data state
+        BoardSlotState slotState = _boardState.GetSlotState(slotIndex.x, slotIndex.y);
+        if (slotState.IsOccupied)
+        {
+            // if the slow is already occupied then return it to the holder
+            var sendBackEvent = SendTileToHolderEvent.Get(playerIndex, uiTile);
+            GameEventHandler.Instance.TriggerEvent(sendBackEvent);
+            return;
+        }
+
+        // update board data
+        slotState.IsOccupied = true;
+        slotState.OccupiedLetter = uiTile.LetterInfo;
+        _boardState.UpdateSlotState(slotIndex.x, slotIndex.y, slotState);
+
+        // update board visual
         _boardVisual.EnableTile(slotIndex.x, slotIndex.y);
 
+        var postEvt = UITilePlacedonBoardEvent.Get(playerIndex, uiTile);
+        GameEventHandler.Instance.TriggerEvent(postEvt);
+
+        // TODO: remove: Just testing this here
+        var uncommittedTiles = BoardDataHelper.GetUncommittedTiles(_boardState);
+
+        List<Vector2Int> contiguousTiles = new List<Vector2Int>();
+
+        if (BoardDataHelper.AreTilesContiguous(uncommittedTiles, _boardState, out contiguousTiles))
+        {
+            Debug.Log("Tiles are contiguous!");
+
+            string word = "";
+            // TODO: this is not working correctly, first letter ignored
+            foreach (var index in contiguousTiles)
+            {
+                var s = _boardState.GetSlotState(index.x, index.y);
+
+                word += s.OccupiedLetter._letter.ToString();
+            }
+
+            if (WordConfigManager.IsValidWord(word))
+            {
+                Debug.Log(word + " is a valid word!");
+            }
+            else
+            {
+                Debug.Log(word + " is NOT a valid word!");
+            }
+        }
+        else
+        {
+            Debug.Log("Tiles are not contiguous!");
+        }
+    }
+
+    public bool HasSlotAbove(BoardSlotState currentSlot)
+    {
+        Vector2Int index = currentSlot.BoardIndex;
+
+        if (index.y < (_boardState.Dimensions.y - 1))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool HasSlotBelow(BoardSlotState currentSlot)
+    {
+        Vector2Int index = currentSlot.BoardIndex;
+
+        if (index.y > 0)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool HasSlotLeft(BoardSlotState currentSlot)
+    {
+        Vector2Int index = currentSlot.BoardIndex;
+
+        if (index.x > 0)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool HasSlotRight(BoardSlotState currentSlot)
+    {
+        Vector2Int index = currentSlot.BoardIndex;
+
+        if (index.x < (_boardState.Dimensions.x - 1))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public BoardSlotState GetSlotAbove(BoardSlotState currentSlot)
+    {
+        // assumes there is a slot above
+        Vector2Int index = currentSlot.BoardIndex;
+
+        return _boardState.GetSlotState(index.x, index.y + 1);
+    }
+
+    public BoardSlotState GetSlotBelow(BoardSlotState currentSlot)
+    {
+        Vector2Int index = currentSlot.BoardIndex;
+
+        return _boardState.GetSlotState(index.x, index.y - 1);
+    }
+
+    public BoardSlotState GetSlotLeft(BoardSlotState currentSlot)
+    {
+        Vector2Int index = currentSlot.BoardIndex;
+
+        return _boardState.GetSlotState(index.x - 1, index.y);
+    }
+
+    public BoardSlotState GetSlotRight(BoardSlotState currentSlot)
+    {
+        Vector2Int index = currentSlot.BoardIndex;
+
+        return _boardState.GetSlotState(index.x + 1, index.y);
     }
 }

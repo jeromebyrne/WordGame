@@ -18,10 +18,6 @@ public class GameManager : MonoBehaviour
         _gameBoard.Init();
     }
 
-    void Update()
-    {
-    }
-
     void AssignInitialLettersToPlayers()
     {
         // assumption is 2 players per game

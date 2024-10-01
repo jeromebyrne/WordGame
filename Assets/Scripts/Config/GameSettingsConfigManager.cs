@@ -5,13 +5,13 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 public static class GameSettingsConfigManager
 {
     private static GameSettingsConfig _gameSettings;
-    private static bool _isInitialized;
+    public static bool IsInitialized { get; private set; }
 
     public static GameSettingsConfig GameSettings
     {
         get
         {
-            if (!_isInitialized)
+            if (!IsInitialized)
             {
                 Debug.LogError("SettingsManager not initialized. Ensure Initialize is called.");
             }
@@ -21,7 +21,7 @@ public static class GameSettingsConfigManager
 
     public static void Initialize(string address)
     {
-        if (_isInitialized) return;
+        if (IsInitialized) return;
 
         Addressables.LoadAssetAsync<GameSettingsConfig>(address).Completed += OnGameSettingsLoaded;
     }
@@ -31,7 +31,7 @@ public static class GameSettingsConfigManager
         if (handle.Status == AsyncOperationStatus.Succeeded)
         {
             _gameSettings = handle.Result;
-            _isInitialized = true;
+            IsInitialized = true;
 
             ValidateBoardDimensions();
         }

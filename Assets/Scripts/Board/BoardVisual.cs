@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections.Generic;
-using UnityEngine.UIElements;
 
 public class BoardVisual : MonoBehaviour
 {
@@ -65,7 +64,7 @@ public class BoardVisual : MonoBehaviour
                 var tile = CreateLetterTile(new Vector3((j * SlotWidth) - boardHalfWidth + SlotWidth * 0.5f,
                                             (i * SlotHeight) - boardHalfHeight + SlotHeight * 0.5f,
                                             -1.0f),
-                                            i.ToString() + "," + j.ToString(),
+                                            new SingleLetterInfo(),
                                             j,
                                             i);
 
@@ -74,22 +73,26 @@ public class BoardVisual : MonoBehaviour
         }
     }
 
-    WorldLetterTileVisual CreateLetterTile(Vector3 position, string text, int gridIndexX, int gridIndexY)
+    WorldLetterTileVisual CreateLetterTile(Vector3 position, SingleLetterInfo letterInfo, int gridIndexX, int gridIndexY)
     {
         GameObject newInstance = Instantiate(_letterTilePrefab, position, Quaternion.identity, _boardSprite.gameObject.transform);
 
         WorldLetterTileVisual tileComponent = newInstance.GetComponent<WorldLetterTileVisual>();
 
-        tileComponent.Populate(gridIndexX, gridIndexY, text);
+        tileComponent.Populate(gridIndexX, gridIndexY, letterInfo._letter, letterInfo._points);
 
         newInstance.SetActive(false);
 
         return tileComponent;
     }
 
-    public void EnableTile(int x, int y)
+    public void EnableTile(int x, int y, SingleLetterInfo letterInfo)
     {
-        _letterTiles[x][y].gameObject.SetActive(true);
+        var obj = _letterTiles[x][y].gameObject;
+        obj.SetActive(true);
+
+        WorldLetterTileVisual tileComponent = obj.GetComponent<WorldLetterTileVisual>();
+        tileComponent.UpdateVisual(letterInfo._letter, letterInfo._points);
     }
 
     public bool IsWorldPositionIntersectingBoard(Vector3 worldPosition)
@@ -97,38 +100,6 @@ public class BoardVisual : MonoBehaviour
         Bounds spriteBounds = _boardSprite.bounds;
 
         return spriteBounds.Contains(worldPosition);
-        /*
-        var rectTransform = tile.RectTransform;
-        if (rectTransform == null)
-        {
-            return false;
-        }
-
-        Vector3[] uiCorners = new Vector3[4];
-        rectTransform.GetWorldCorners(uiCorners);
-
-        for (int i = 0; i < uiCorners.Length; i++)
-        {
-            uiCorners[i] = Camera.main.ScreenToWorldPoint(tile.transform.position);
-        }
-
-        Bounds spriteBounds = _boardSprite.bounds;
-
-        for (int i = 0; i < uiCorners.Length; i++)
-        {
-            uiCorners[i].z = spriteBounds.center.z;
-        }
-
-        for (int i = 0; i < uiCorners.Length; i++)
-        {
-            if (spriteBounds.Contains(uiCorners[i]))
-            {
-                return true;
-            }
-        }
-
-        return false;
-        */
     }
 
     public Vector2Int GetNearestSlotIndex(Vector3 worldPosition)

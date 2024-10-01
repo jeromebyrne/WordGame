@@ -106,6 +106,12 @@ public static class BoardDataHelper
     {
         contiguousTiles = new List<Vector2Int>();
 
+        // Add the first tile to the contiguous list
+        if (tiles.Count > 0)
+        {
+            contiguousTiles.Add(tiles[0]);
+        }
+
         for (int i = 1; i < tiles.Count; i++)
         {
             Vector2Int currentTile = tiles[i];

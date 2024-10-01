@@ -96,7 +96,7 @@ public class GameBoard : MonoBehaviour
         _boardState.UpdateSlotState(slotIndex.x, slotIndex.y, slotState);
 
         // update board visual
-        _boardVisual.EnableTile(slotIndex.x, slotIndex.y);
+        _boardVisual.EnableTile(slotIndex.x, slotIndex.y, uiTile.LetterInfo);
 
         var postEvt = UITilePlacedonBoardEvent.Get(playerIndex, uiTile);
         GameEventHandler.Instance.TriggerEvent(postEvt);

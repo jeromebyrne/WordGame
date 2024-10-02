@@ -123,3 +123,33 @@ public class UITilePlacedonBoardEvent : GameEvent
         Tile = null;
     }
 }
+
+public class PlayerTurnFinishedEvent : GameEvent
+{
+    public int PlayerIndex { get; private set; }
+
+    public static PlayerTurnFinishedEvent Get(int playerIndex)
+    {
+        var evt = Get<PlayerTurnFinishedEvent>();
+        evt.PlayerIndex = playerIndex;
+        return evt;
+    }
+
+    public override void Reset()
+    {
+        PlayerIndex = -1;
+    }
+}
+
+public class UIPlayButtonPressedEvent : GameEvent
+{
+    public static UIPlayButtonPressedEvent Get()
+    {
+        var evt = Get<UIPlayButtonPressedEvent>();
+        return evt;
+    }
+
+    public override void Reset()
+    {
+    }
+}

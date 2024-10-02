@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -7,6 +8,16 @@ public class GameManager : MonoBehaviour
     private LetterBag _letterBag = new LetterBag();
     [SerializeField] private UILetterTileHolder _playerTileHolder;
     [SerializeField] private GameBoard _gameBoard;
+
+    private void OnEnable()
+    {
+        GameEventHandler.Instance.Subscribe<UIPlayButtonPressedEvent>(OnAttemptPlayTurn);
+    }
+
+    private void OnDisable()
+    {
+        GameEventHandler.Instance.Unsubscribe<UIPlayButtonPressedEvent>(OnAttemptPlayTurn);
+    }
 
     void Start()
     {
@@ -44,5 +55,38 @@ public class GameManager : MonoBehaviour
                 GameEventHandler.Instance.TriggerEvent(evt);
             }
         }
+    }
+
+    private void OnAttemptPlayTurn(UIPlayButtonPressedEvent evt)
+    {
+        // check if we can play this turn
+
+        var boardState = _gameBoard.GetBoardState();
+
+        var uncommittedTiles = BoardDataHelper.GetUncommittedTiles(boardState);
+
+        List<Vector2Int> contiguousTiles = new List<Vector2Int>();
+
+        if (!BoardDataHelper.AreTilesContiguous(uncommittedTiles, boardState, out contiguousTiles))
+        {
+            Debug.Log("Tiles are not contiguous!");
+            return;
+        }
+
+        Debug.Log("Tiles are contiguous!");
+
+        string word = BoardDataHelper.GetWordFromTiles(boardState, contiguousTiles);
+
+        if (!WordConfigManager.IsValidWord(word))
+        {
+            Debug.Log(word + " is NOT a valid word!");
+            return;
+        }
+
+        Debug.Log(word + " is a valid word!");
+
+        int score = BoardDataHelper.GetScoreFromTiles(boardState, contiguousTiles);
+
+        Debug.Log("Score for " + word + " is: " + score.ToString());
     }
 }

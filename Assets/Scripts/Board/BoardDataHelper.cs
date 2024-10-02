@@ -3,7 +3,7 @@ using UnityEngine;
 
 public static class BoardDataHelper
 {
-    public static List<Vector2Int> GetUncommittedTiles(BoardState boardState)
+    public static List<Vector2Int> GetUncommittedTiles(IReadOnlyBoardState boardState)
     {
         List<Vector2Int> uncommittedTiles = new List<Vector2Int>();
 
@@ -22,11 +22,44 @@ public static class BoardDataHelper
         return uncommittedTiles;
     }
 
-    public static bool AreTilesContiguous(List<Vector2Int> uncommittedTiles, BoardState boardState, out List<Vector2Int> contiguousTiles)
+    public static string GetWordFromTiles(IReadOnlyBoardState boardState, List<Vector2Int> contiguousTiles)
+    {
+        string word = "";
+        foreach (var index in contiguousTiles)
+        {
+            var s = boardState.GetSlotState(index.x, index.y);
+
+            word += s.OccupiedLetter._letter.ToString();
+        }
+
+        return word;
+    }
+
+    public static int GetScoreFromTiles(IReadOnlyBoardState boardState, List<Vector2Int> contiguousTiles)
+    {
+        // TODO: future update: check tile multipliers
+        int score = 0;
+
+        foreach (var index in contiguousTiles)
+        {
+            var s = boardState.GetSlotState(index.x, index.y);
+
+            score += s.OccupiedLetter._points;
+        }
+
+        return score;
+    }
+
+    public static bool AreTilesContiguous(List<Vector2Int> uncommittedTiles, IReadOnlyBoardState boardState, out List<Vector2Int> contiguousTiles)
     {
         contiguousTiles = new List<Vector2Int>();
 
-        if (uncommittedTiles.Count <= 1)
+        if (uncommittedTiles.Count < 1)
+        {
+            return false;
+        }
+
+        if (uncommittedTiles.Count < 2)
         {
             contiguousTiles.AddRange(uncommittedTiles);
             return true; // One or zero tiles are trivially contiguous
@@ -102,7 +135,7 @@ public static class BoardDataHelper
         }
     }
 
-    private static bool CheckContiguityWithGaps(List<Vector2Int> tiles, bool isRowCheck, BoardState boardState, out List<Vector2Int> contiguousTiles)
+    private static bool CheckContiguityWithGaps(List<Vector2Int> tiles, bool isRowCheck, IReadOnlyBoardState boardState, out List<Vector2Int> contiguousTiles)
     {
         contiguousTiles = new List<Vector2Int>();
 

@@ -9,6 +9,11 @@ public class GameBoard : MonoBehaviour
 
     private BoardState _boardState = null;
 
+    public IReadOnlyBoardState GetBoardState() // don't cast me to the concrete type...
+    { 
+        return _boardState;
+    }
+
     private UILetterTile _draggedUILetterTile = null; // only allow dragging 1 tile at a time for simplicity
 
     private void OnEnable()
@@ -100,38 +105,6 @@ public class GameBoard : MonoBehaviour
 
         var postEvt = UITilePlacedonBoardEvent.Get(playerIndex, uiTile);
         GameEventHandler.Instance.TriggerEvent(postEvt);
-
-        // TODO: remove: Just testing this here
-        var uncommittedTiles = BoardDataHelper.GetUncommittedTiles(_boardState);
-
-        List<Vector2Int> contiguousTiles = new List<Vector2Int>();
-
-        if (BoardDataHelper.AreTilesContiguous(uncommittedTiles, _boardState, out contiguousTiles))
-        {
-            Debug.Log("Tiles are contiguous!");
-
-            string word = "";
-            // TODO: this is not working correctly, first letter ignored
-            foreach (var index in contiguousTiles)
-            {
-                var s = _boardState.GetSlotState(index.x, index.y);
-
-                word += s.OccupiedLetter._letter.ToString();
-            }
-
-            if (WordConfigManager.IsValidWord(word))
-            {
-                Debug.Log(word + " is a valid word!");
-            }
-            else
-            {
-                Debug.Log(word + " is NOT a valid word!");
-            }
-        }
-        else
-        {
-            Debug.Log("Tiles are not contiguous!");
-        }
     }
 
     public bool HasSlotAbove(BoardSlotState currentSlot)

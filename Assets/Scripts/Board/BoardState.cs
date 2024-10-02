@@ -17,9 +17,15 @@ public struct BoardSlotState
     public Vector2Int BoardIndex { get; private set; }
 }
 
-public class BoardState
+public interface IReadOnlyBoardState
 {
-    private List<List<BoardSlotState>> _slots = new List<List<BoardSlotState>>();
+    Vector2Int Dimensions { get; }
+    BoardSlotState GetSlotState(int row, int column);
+}
+
+public class BoardState : IReadOnlyBoardState
+{
+    private readonly List<List<BoardSlotState>> _slots = new List<List<BoardSlotState>>();
 
     private BoardState() { }
 

@@ -5,7 +5,6 @@ public class WorldTileDragHandler : MonoBehaviour
     private Camera _camera;
     private bool _isDragging = false;
     private GameObject _selectedTile = null;
-    private SpriteRenderer _selectedTileRenderer = null;
     [SerializeField] BoardVisual _boardVisual = null;
 
     public void Init()
@@ -28,14 +27,33 @@ public class WorldTileDragHandler : MonoBehaviour
         if (Input.GetMouseButtonUp(0))
         {
             _isDragging = false;
+
+            if (_selectedTile != null)
+            {
+                // send a drag end event
+                var visualComponent = _selectedTile.GetComponent<WorldLetterTileVisual>();
+
+                if (visualComponent)
+                {
+                    var postEvt = WorldTileEndDragEvent.Get(visualComponent);
+                    GameEventHandler.Instance.TriggerEvent(postEvt);
+                }
+                
+            }
+
             _selectedTile = null;
-            _selectedTileRenderer = null;
         }
     }
 
     // Detects if a tile was tapped
     void DetectTileTapped()
     {
+        if (_selectedTile != null)
+        {
+            // already dragging
+            return;
+        }
+
         Vector3 mousePos = Input.mousePosition;
         Vector3 worldPos = _camera.ScreenToWorldPoint(mousePos);
 
@@ -52,8 +70,16 @@ public class WorldTileDragHandler : MonoBehaviour
             if (IsPointWithinSpriteBounds(tr, worldPos))
             {
                 _selectedTile = tr.gameObject;
-                _selectedTileRenderer = tr;
                 _isDragging = true;
+
+                var visualComponent = _selectedTile.GetComponent<WorldLetterTileVisual>();
+
+                if (visualComponent)
+                {
+                    var postEvt = WorldTileStartDragEvent.Get(visualComponent);
+                    GameEventHandler.Instance.TriggerEvent(postEvt);
+                }
+
                 break;
             }
         }
@@ -75,8 +101,6 @@ public class WorldTileDragHandler : MonoBehaviour
         Vector3 mousePos = Input.mousePosition;
         Vector3 worldPos = _camera.ScreenToWorldPoint(mousePos);
         worldPos.z = _selectedTile.transform.position.z; // Keep the Z position constant
-        // _selectedTile.transform.position = worldPos;
-
-        // disable this tile and re-enable the UI element
+        _selectedTile.transform.position = worldPos;
     }
 }

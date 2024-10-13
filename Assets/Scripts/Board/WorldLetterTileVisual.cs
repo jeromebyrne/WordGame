@@ -8,25 +8,23 @@ public class WorldLetterTileVisual : MonoBehaviour
     [SerializeField] private SpriteRenderer _spriteRenderer = null;
 
     public Vector2Int GridIndex { get; private set; }
+    public int PlayerIndex { get; set; }
 
-    public void Populate(int gridIndexX, int gridIndexY, char letter, int score)
+    public LetterDataObj LetterData { get; private set; }
+
+    public SpriteRenderer SpriteRenderer { get { return _spriteRenderer; } }
+
+    public void SetGridIndex(Vector2Int gridIndex)
     {
-        GridIndex = new Vector2Int(gridIndexX, gridIndexY);
-        _letterText.text = letter.ToString();
-        _scoreText.text = score.ToString();
+        GridIndex = gridIndex;
     }
 
-    public void UpdateVisual(char letter, int score)
+    public void Populate(LetterDataObj letterData, int playerIndex)
     {
-        _letterText.text = letter.ToString().ToUpper();
-        _scoreText.text = score.ToString();
-    }
+        _letterText.text = letterData.Character.ToString().ToUpper();
+        _scoreText.text = letterData.Score.ToString();
+        PlayerIndex = playerIndex;
 
-    public Bounds VisualBounds
-    {
-        get
-        {
-            return _spriteRenderer.bounds;
-        }
+        LetterData = letterData;
     }
 }

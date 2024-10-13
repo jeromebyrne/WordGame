@@ -153,3 +153,37 @@ public class UIPlayButtonPressedEvent : GameEvent
     {
     }
 }
+
+public class WorldTileStartDragEvent : GameEvent
+{
+    public WorldLetterTileVisual LetterTile { get; private set; }
+
+    public static WorldTileStartDragEvent Get(WorldLetterTileVisual letterTile)
+    {
+        var evt = Get<WorldTileStartDragEvent>();
+        evt.LetterTile = letterTile;
+        return evt;
+    }
+
+    public override void Reset()
+    {
+        LetterTile = null;
+    }
+}
+
+public class WorldTileEndDragEvent : GameEvent
+{
+    public WorldLetterTileVisual LetterTile { get; private set; }
+
+    public static WorldTileEndDragEvent Get(WorldLetterTileVisual letterTile)
+    {
+        var evt = Get<WorldTileEndDragEvent>();
+        evt.LetterTile = letterTile;
+        return evt;
+    }
+
+    public override void Reset()
+    {
+        LetterTile = null;
+    }
+}

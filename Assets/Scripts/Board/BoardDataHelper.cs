@@ -29,7 +29,7 @@ public static class BoardDataHelper
         {
             var s = boardState.GetSlotState(index.x, index.y);
 
-            word += s.OccupiedLetter._letter.ToString();
+            word += s.OccupiedLetter.Character.ToString();
         }
 
         return word;
@@ -44,7 +44,7 @@ public static class BoardDataHelper
         {
             var s = boardState.GetSlotState(index.x, index.y);
 
-            score += s.OccupiedLetter._points;
+            score += s.OccupiedLetter.Score;
         }
 
         return score;

@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class GameBoard : MonoBehaviour
 {
     [SerializeField] BoardVisual _boardVisual = null;
-
     private BoardState _boardState = null;
 
     public IReadOnlyBoardState GetBoardState() // don't cast me to the concrete type...
@@ -30,9 +26,6 @@ public class GameBoard : MonoBehaviour
 
     public void Init()
     {
-        var boardGridDimensions = GameSettingsConfigManager.GameSettings._boardDimensions;
-        _boardVisual.SetGridDimensions(boardGridDimensions);
-
         _boardState = new BoardState(GameSettingsConfigManager.GameSettings._boardDimensions);
     }
 
@@ -100,7 +93,7 @@ public class GameBoard : MonoBehaviour
         slotState.OccupiedLetter = uiTile.LetterInfo;
         _boardState.UpdateSlotState(slotIndex.x, slotIndex.y, slotState);
 
-        // update board visual
+        // update board visual (TODO: should really send an event to do this)
         _boardVisual.EnableTile(slotIndex.x, slotIndex.y, uiTile.LetterInfo);
 
         var postEvt = UITilePlacedonBoardEvent.Get(playerIndex, uiTile);

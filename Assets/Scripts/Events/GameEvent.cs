@@ -68,9 +68,9 @@ public class UILetterTileEndDragEvent : GameEvent
 public class PlayerLetterAssignedEvent : GameEvent
 {
     public PlayerState PlayerState { get; private set; }
-    public SingleLetterInfo LetterInfo { get; private set; }
+    public LetterDataObj LetterInfo { get; private set; }
 
-    public static PlayerLetterAssignedEvent Get(PlayerState playerState, SingleLetterInfo letterInfo)
+    public static PlayerLetterAssignedEvent Get(PlayerState playerState, LetterDataObj letterInfo)
     {
         var evt = Get<PlayerLetterAssignedEvent>();
         evt.PlayerState = playerState;

@@ -9,7 +9,11 @@ public class BoardVisual : MonoBehaviour
 
     private List<List<WorldLetterTileVisual>> _letterTiles = new List<List<WorldLetterTileVisual>>();
 
+    private List<SpriteRenderer> _letterTilesSprites = new List<SpriteRenderer>(); 
+
     private Vector2Int _cachedGridDimensions;
+
+    public List<SpriteRenderer> GetTilesSpriteRenderers() { return _letterTilesSprites; }
 
     public Bounds VisualBounds
     {
@@ -64,35 +68,36 @@ public class BoardVisual : MonoBehaviour
                 var tile = CreateLetterTile(new Vector3((j * SlotWidth) - boardHalfWidth + SlotWidth * 0.5f,
                                             (i * SlotHeight) - boardHalfHeight + SlotHeight * 0.5f,
                                             -1.0f),
-                                            new SingleLetterInfo(),
                                             j,
                                             i);
 
                 _letterTiles[i].Add(tile);
+
+                _letterTilesSprites.Add(tile.GetComponent<SpriteRenderer>());
             }
         }
     }
 
-    WorldLetterTileVisual CreateLetterTile(Vector3 position, SingleLetterInfo letterInfo, int gridIndexX, int gridIndexY)
+    WorldLetterTileVisual CreateLetterTile(Vector3 position, int gridIndexX, int gridIndexY)
     {
         GameObject newInstance = Instantiate(_letterTilePrefab, position, Quaternion.identity, _boardSprite.gameObject.transform);
 
         WorldLetterTileVisual tileComponent = newInstance.GetComponent<WorldLetterTileVisual>();
 
-        tileComponent.Populate(gridIndexX, gridIndexY, letterInfo._letter, letterInfo._points);
+        tileComponent.Populate(gridIndexX, gridIndexY, '0', 0);
 
         newInstance.SetActive(false);
 
         return tileComponent;
     }
 
-    public void EnableTile(int x, int y, SingleLetterInfo letterInfo)
+    public void EnableTile(int x, int y, LetterDataObj letterInfo)
     {
         var obj = _letterTiles[x][y].gameObject;
         obj.SetActive(true);
 
         WorldLetterTileVisual tileComponent = obj.GetComponent<WorldLetterTileVisual>();
-        tileComponent.UpdateVisual(letterInfo._letter, letterInfo._points);
+        tileComponent.UpdateVisual(letterInfo.Character, letterInfo.Score);
     }
 
     public bool IsWorldPositionIntersectingBoard(Vector3 worldPosition)

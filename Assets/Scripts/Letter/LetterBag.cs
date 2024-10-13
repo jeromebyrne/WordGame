@@ -1,12 +1,9 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using Unity.Mathematics;
 using UnityEngine;
 
 public class LetterBag
 {
-    List<SingleLetterInfo> _letters = new List<SingleLetterInfo>();
+    List<LetterDataObj> _letters = new List<LetterDataObj>();
 
     private static readonly System.Random _random = new System.Random();
 
@@ -20,7 +17,7 @@ public class LetterBag
         {
             for (int i = 0; i < letter._wordBagCount; i++)
             {
-                _letters.Add(letter);
+                _letters.Add(new LetterDataObj(letter));
             }
         }
 
@@ -29,7 +26,7 @@ public class LetterBag
 
     public void ClearAllLetters()
     {
-        _letters = new List<SingleLetterInfo>();
+        _letters = new List<LetterDataObj>();
     }
 
     public bool HasLetterToPick()
@@ -37,11 +34,11 @@ public class LetterBag
         return _letters.Count > 0;
     }
 
-    public SingleLetterInfo PickRandomLetter()
+    public LetterDataObj PickRandomLetter()
     {
         int randomIndex = _random.Next(_letters.Count);
 
-        SingleLetterInfo letterInfo = _letters[randomIndex];
+        LetterDataObj letterInfo = _letters[randomIndex];
 
         // Remove so it doesn't get picked again
         _letters.RemoveAt(randomIndex);

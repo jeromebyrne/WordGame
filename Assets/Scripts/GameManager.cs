@@ -8,6 +8,8 @@ public class GameManager : MonoBehaviour
     private LetterBag _letterBag = new LetterBag();
     [SerializeField] private UILetterTileHolder _playerTileHolder;
     [SerializeField] private GameBoard _gameBoard;
+    [SerializeField] private WorldTileDragHandler _worldTileDragHandler;
+    [SerializeField] private BoardVisual _boardVisual;
 
     private void OnEnable()
     {
@@ -26,7 +28,12 @@ public class GameManager : MonoBehaviour
         _playerTileHolder.Init();
         AssignInitialLettersToPlayers();
 
+        var boardDimensions = GameSettingsConfigManager.GameSettings._boardDimensions;
+        _boardVisual.SetGridDimensions(boardDimensions);
+
         _gameBoard.Init();
+
+        _worldTileDragHandler.Init();
     }
 
     void AssignInitialLettersToPlayers()
@@ -38,7 +45,7 @@ public class GameManager : MonoBehaviour
             if (i % 2 == 0)
             {
                 // player 1
-                SingleLetterInfo randomLetter = _letterBag.PickRandomLetter();
+                LetterDataObj randomLetter = _letterBag.PickRandomLetter();
                 _playerOneState.AssignLetter(randomLetter);
 
                 var evt = PlayerLetterAssignedEvent.Get(_playerOneState, randomLetter);
@@ -48,7 +55,7 @@ public class GameManager : MonoBehaviour
             else
             {
                 // player 2
-                SingleLetterInfo randomLetter = _letterBag.PickRandomLetter();
+                LetterDataObj randomLetter = _letterBag.PickRandomLetter();
                 _playerTwoState.AssignLetter(randomLetter);
 
                 var evt = PlayerLetterAssignedEvent.Get(_playerTwoState, randomLetter);
@@ -88,5 +95,7 @@ public class GameManager : MonoBehaviour
         int score = BoardDataHelper.GetScoreFromTiles(boardState, contiguousTiles);
 
         Debug.Log("Score for " + word + " is: " + score.ToString());
+
+        // TODO: increase player score and move to next players turn
     }
 }

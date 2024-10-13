@@ -20,7 +20,7 @@ public class UILetterTile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
 
     public int PlayerIndex { get; private set; }
 
-    public SingleLetterInfo LetterInfo { get; private set; }
+    public LetterDataObj LetterInfo { get; private set; }
 
     private void Awake()
     {
@@ -32,10 +32,10 @@ public class UILetterTile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
     }
 
     // TODO: shouldn't pass SingleLetterInfo, just integers
-    public void Populate(SingleLetterInfo letterInfo, int playerIndex)
+    public void Populate(LetterDataObj letterInfo, int playerIndex)
     {
-        _letterLabel.text = letterInfo._letter.ToString().ToUpper();
-        _pointsLabel.text = letterInfo._points.ToString();
+        _letterLabel.text = letterInfo.Character.ToString().ToUpper();
+        _pointsLabel.text = letterInfo.Score.ToString();
         PlayerIndex = playerIndex;
         LetterInfo = letterInfo;
     }

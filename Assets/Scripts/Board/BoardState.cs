@@ -7,13 +7,13 @@ public struct BoardSlotState
     {
         IsOccupied = occupied;
         IsTileCommitted = isTileCommitted;
-        OccupiedLetter = new SingleLetterInfo();
+        OccupiedLetter = null;
         BoardIndex = boardIndex;
     }
 
     public bool IsOccupied { get; set; }
     public bool IsTileCommitted { get; set; }
-    public SingleLetterInfo OccupiedLetter { get; set; }
+    public LetterDataObj OccupiedLetter { get; set; }
     public Vector2Int BoardIndex { get; private set; }
 }
 

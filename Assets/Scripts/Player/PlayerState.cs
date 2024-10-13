@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 
 public class PlayerState
@@ -12,25 +11,25 @@ public class PlayerState
 
     public int PlayerIndex { get; private set; }
 
-    List<SingleLetterInfo> _currentPlayerLetters = new List<SingleLetterInfo>();
+    List<LetterDataObj> _currentPlayerLetters = new List<LetterDataObj>();
 
-    public void AssignLetter(SingleLetterInfo letter)
+    public void AssignLetter(LetterDataObj letter)
     {
         _currentPlayerLetters.Add(letter);
     }
 
     public void ClearLetters()
     {
-        _currentPlayerLetters = new List<SingleLetterInfo>();
+        _currentPlayerLetters = new List<LetterDataObj>();
     }
 
-    public void RemoveLetter(SingleLetterInfo letterInfo)
+    public void RemoveLetter(LetterDataObj letterInfo)
     {
         int index = -1;
         int count = 0;
         foreach (var l in _currentPlayerLetters)
         {
-            if (l._letter == letterInfo._letter)
+            if (l.Character == letterInfo.Character)
             {
                 index = count;
                 break;

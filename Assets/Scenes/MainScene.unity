@@ -135,6 +135,7 @@ GameObject:
   - component: {fileID: 46494436}
   - component: {fileID: 46494438}
   - component: {fileID: 46494439}
+  - component: {fileID: 46494440}
   m_Layer: 0
   m_Name: scripts
   m_TagString: Untagged
@@ -184,6 +185,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _playerTileHolder: {fileID: 321000490}
   _gameBoard: {fileID: 46494436}
+  _worldTileDragHandler: {fileID: 46494440}
+  _boardVisual: {fileID: 1483288910}
 --- !u!114 &46494439
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -196,6 +199,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7b2f20e0a7f1d4611a3e8030a67fdc89, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &46494440
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 46494435}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7db540f269d404a40bd1f6f40a5aa493, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _boardVisual: {fileID: 1483288910}
 --- !u!1 &189475473
 GameObject:
   m_ObjectHideFlags: 0
@@ -635,7 +651,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 48, y: -634}
+  m_AnchoredPosition: {x: 0.0000038146973, y: -634}
   m_SizeDelta: {x: 424.0746, y: -1779.3741}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1375592921

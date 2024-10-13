@@ -85,7 +85,7 @@ public class UILetterTileHolder : MonoBehaviour
         }
     }
 
-    private GameObject CreateTile(SingleLetterInfo letterInfo, int playerIndex)
+    private GameObject CreateTile(LetterDataObj letterInfo, int playerIndex)
     {
         GameObject newInstance = Instantiate(_tilePrefab, _playersTileParents[playerIndex].transform);
 

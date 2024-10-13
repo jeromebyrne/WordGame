@@ -7,13 +7,28 @@ public class BoardVisual : MonoBehaviour
 
     [SerializeField] private GameObject _letterTilePrefab;
 
-    private List<List<WorldLetterTileVisual>> _letterTiles = new List<List<WorldLetterTileVisual>>();
-
     private List<SpriteRenderer> _letterTilesSprites = new List<SpriteRenderer>(); 
 
     private Vector2Int _cachedGridDimensions;
 
     public List<SpriteRenderer> GetTilesSpriteRenderers() { return _letterTilesSprites; }
+
+    public Vector3 GetWorldPositionForGridIndex(Vector2Int gridIndex)
+    {
+        // Get the board's bounds
+        Bounds boardBounds = _boardSprite.bounds;
+
+        // Calculate half the board's width and height
+        float boardHalfWidth = boardBounds.size.x * 0.5f;
+        float boardHalfHeight = boardBounds.size.y * 0.5f;
+
+        // Calculate the world position based on grid index and slot dimensions
+        float worldX = (gridIndex.x * SlotWidth) - boardHalfWidth + SlotWidth * 0.5f /*+ boardBounds.min.x*/;
+        float worldY = (gridIndex.y * SlotHeight) - boardHalfHeight + SlotHeight * 0.5f /*+ boardBounds.min.y*/;
+
+        // Return the calculated world position
+        return new Vector3(worldX, worldY, -2.0f); // TODO: cache these positions
+    }
 
     public Bounds VisualBounds
     {
@@ -48,10 +63,9 @@ public class BoardVisual : MonoBehaviour
         }
 
         _boardSprite.size = dimensions;
-
-        AddLetterTiles(dimensions);
     }
 
+    /*
     private void AddLetterTiles(Vector2Int dimensions)
     {
         // add a tile for every slot, we can turn them on and off
@@ -77,27 +91,19 @@ public class BoardVisual : MonoBehaviour
             }
         }
     }
+    */
 
-    WorldLetterTileVisual CreateLetterTile(Vector3 position, int gridIndexX, int gridIndexY)
+    public WorldLetterTileVisual CreateLetterTile(LetterDataObj letterData, int playerIndex)
     {
-        GameObject newInstance = Instantiate(_letterTilePrefab, position, Quaternion.identity, _boardSprite.gameObject.transform);
+        GameObject newInstance = Instantiate(_letterTilePrefab, Vector3.zero, Quaternion.identity, _boardSprite.gameObject.transform);
 
         WorldLetterTileVisual tileComponent = newInstance.GetComponent<WorldLetterTileVisual>();
 
-        tileComponent.Populate(gridIndexX, gridIndexY, '0', 0);
+        tileComponent.Populate(letterData, playerIndex);
 
-        newInstance.SetActive(false);
+        _letterTilesSprites.Add(newInstance.GetComponent<SpriteRenderer>());
 
         return tileComponent;
-    }
-
-    public void EnableTile(int x, int y, LetterDataObj letterInfo)
-    {
-        var obj = _letterTiles[x][y].gameObject;
-        obj.SetActive(true);
-
-        WorldLetterTileVisual tileComponent = obj.GetComponent<WorldLetterTileVisual>();
-        tileComponent.UpdateVisual(letterInfo.Character, letterInfo.Score);
     }
 
     public bool IsWorldPositionIntersectingBoard(Vector3 worldPosition)
@@ -123,12 +129,7 @@ public class BoardVisual : MonoBehaviour
         {
             Debug.Log("Position is outside the sprite bounds.");
         }
-        else
-        {
-            int index = row * columns + column;
-            Debug.Log($"World position corresponds to tile index: {index} (row: {row}, column: {column})");
-        }
 
-        return new Vector2Int(row, column); // TODO: don't do new
+        return new Vector2Int(column, row); // TODO: don't do new
     }
 }

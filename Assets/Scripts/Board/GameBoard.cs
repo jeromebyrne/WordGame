@@ -16,12 +16,16 @@ public class GameBoard : MonoBehaviour
     {
         GameEventHandler.Instance.Subscribe<UILetterTileStartDragEvent>(OnUITileStartDrag);
         GameEventHandler.Instance.Subscribe<UILetterTileEndDragEvent>(OnUITileEndDrag);
+        GameEventHandler.Instance.Subscribe<WorldTileStartDragEvent>(OnWorldTileStartDrag);
+        GameEventHandler.Instance.Subscribe<WorldTileEndDragEvent>(OnWorldTileEndDrag);
     }
 
     private void OnDisable()
     {
         GameEventHandler.Instance.Unsubscribe<UILetterTileStartDragEvent>(OnUITileStartDrag);
         GameEventHandler.Instance.Unsubscribe<UILetterTileEndDragEvent>(OnUITileEndDrag);
+        GameEventHandler.Instance.Unsubscribe<WorldTileStartDragEvent>(OnWorldTileStartDrag);
+        GameEventHandler.Instance.Unsubscribe<WorldTileEndDragEvent>(OnWorldTileEndDrag);
     }
 
     public void Init()
@@ -44,17 +48,13 @@ public class GameBoard : MonoBehaviour
     {
         UnityEngine.Debug.Assert(_draggedUILetterTile == evt.LetterTile, "End drag on a UI letter tile that wasn't being tracked");
 
-        // TODO:
-        // if the UI letter tile is within the boards world space then place it on the nearest tile
-        // otherwise send it back to the tile holder
-
         Vector2 worldPos = Camera.main.ScreenToWorldPoint(evt.LetterTile.RectTransform.position);
 
         if (_boardVisual.IsWorldPositionIntersectingBoard(worldPos))
         {
             UnityEngine.Debug.Log("Tile is intersecting board");
 
-            PlaceTile(evt.LetterTile.PlayerIndex, evt.LetterTile);
+            PlaceUITile(evt.LetterTile.PlayerIndex, evt.LetterTile, worldPos);
         }
         else
         {
@@ -66,114 +66,82 @@ public class GameBoard : MonoBehaviour
         _draggedUILetterTile = null;
     }
 
-
-    private void PlaceTile(int playerIndex, UILetterTile uiTile)
+    private void OnWorldTileStartDrag(WorldTileStartDragEvent evt)
     {
-        // Get world pos of UITile
-        Vector2 worldPos = Camera.main.ScreenToWorldPoint(uiTile.RectTransform.position);
+        var worldTile = evt.LetterTile;
 
+        // Update the board data
+        BoardSlotState slotState = _boardState.GetSlotState(worldTile.GridIndex.x, worldTile.GridIndex.x);
+
+        if (slotState.IsTileCommitted)
+        {
+            // We shouldn't be able to move committed tiles
+            return;
+        }
+
+        slotState.IsOccupied = false;
+        _boardState.UpdateSlotState(worldTile.GridIndex.x, worldTile.GridIndex.y, slotState);
+    }
+
+    private void OnWorldTileEndDrag(WorldTileEndDragEvent evt)
+    {
+        var worldTile = evt.LetterTile;
+
+        Vector2 worldPos = worldTile.transform.position;
+
+        if (!_boardVisual.IsWorldPositionIntersectingBoard(worldPos))
+        {
+            // TODO: need to send the tile back to the UI holder
+            return;
+        }
+
+        SnapWorldTile(evt.LetterTile.PlayerIndex, evt.LetterTile, worldPos);
+    }
+
+    private void SnapWorldTile(int playerIndex, WorldLetterTileVisual worldTile, Vector2 worldPos)
+    {
+        Vector2Int nearestSlotIndex = _boardVisual.GetNearestSlotIndex(worldPos);
+
+        var retTuple = BoardDataHelper.FindNextNearestUnoccupiedSlot(nearestSlotIndex, _boardState);
+
+        if (retTuple.Item1 == false)
+        {
+            // TODO: there was no space on the board somehow...
+            // We need to figure out what we should do in this scenario
+
+            // TODO: if the worldTile has a set grid index then mak
+            return;
+        }
+
+        Vector2Int nearestUnoccupiedIndex = retTuple.Item2;
+
+        worldTile.SetGridIndex(nearestUnoccupiedIndex);
+
+        Vector3 snappedPosition = _boardVisual.GetWorldPositionForGridIndex(nearestUnoccupiedIndex);
+
+        worldTile.transform.position = snappedPosition;
+
+        // Update the board data
+        BoardSlotState slotState = _boardState.GetSlotState(nearestUnoccupiedIndex.x, nearestUnoccupiedIndex.y);
+
+        slotState.IsOccupied = true;
+        slotState.OccupiedLetter = worldTile.LetterData;
+        _boardState.UpdateSlotState(nearestUnoccupiedIndex.x, nearestUnoccupiedIndex.y, slotState);
+    }
+
+    private void PlaceUITile(int playerIndex, UILetterTile uiTile, Vector2 worldPos)
+    {
         if (!_boardVisual.IsWorldPositionIntersectingBoard(worldPos))
         {
             return;
         }
 
-        Vector2Int slotIndex = _boardVisual.GetNearestSlotIndex(worldPos);
-
-        BoardSlotState slotState = _boardState.GetSlotState(slotIndex.x, slotIndex.y);
-        if (slotState.IsOccupied)
-        {
-            // if the slow is already occupied then return it to the holder
-            var sendBackEvent = SendTileToHolderEvent.Get(playerIndex, uiTile);
-            GameEventHandler.Instance.TriggerEvent(sendBackEvent);
-            return;
-        }
-
-        // update board data
-        slotState.IsOccupied = true;
-        slotState.OccupiedLetter = uiTile.LetterInfo;
-        _boardState.UpdateSlotState(slotIndex.x, slotIndex.y, slotState);
-
         // update board visual (TODO: should really send an event to do this)
-        _boardVisual.EnableTile(slotIndex.x, slotIndex.y, uiTile.LetterInfo);
+        var worldTile = _boardVisual.CreateLetterTile(uiTile.LetterInfo, playerIndex);
+
+        SnapWorldTile(playerIndex, worldTile, worldPos);
 
         var postEvt = UITilePlacedonBoardEvent.Get(playerIndex, uiTile);
         GameEventHandler.Instance.TriggerEvent(postEvt);
-    }
-
-    public bool HasSlotAbove(BoardSlotState currentSlot)
-    {
-        Vector2Int index = currentSlot.BoardIndex;
-
-        if (index.y < (_boardState.Dimensions.y - 1))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    public bool HasSlotBelow(BoardSlotState currentSlot)
-    {
-        Vector2Int index = currentSlot.BoardIndex;
-
-        if (index.y > 0)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    public bool HasSlotLeft(BoardSlotState currentSlot)
-    {
-        Vector2Int index = currentSlot.BoardIndex;
-
-        if (index.x > 0)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    public bool HasSlotRight(BoardSlotState currentSlot)
-    {
-        Vector2Int index = currentSlot.BoardIndex;
-
-        if (index.x < (_boardState.Dimensions.x - 1))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    public BoardSlotState GetSlotAbove(BoardSlotState currentSlot)
-    {
-        // assumes there is a slot above
-        Vector2Int index = currentSlot.BoardIndex;
-
-        return _boardState.GetSlotState(index.x, index.y + 1);
-    }
-
-    public BoardSlotState GetSlotBelow(BoardSlotState currentSlot)
-    {
-        Vector2Int index = currentSlot.BoardIndex;
-
-        return _boardState.GetSlotState(index.x, index.y - 1);
-    }
-
-    public BoardSlotState GetSlotLeft(BoardSlotState currentSlot)
-    {
-        Vector2Int index = currentSlot.BoardIndex;
-
-        return _boardState.GetSlotState(index.x - 1, index.y);
-    }
-
-    public BoardSlotState GetSlotRight(BoardSlotState currentSlot)
-    {
-        Vector2Int index = currentSlot.BoardIndex;
-
-        return _boardState.GetSlotState(index.x + 1, index.y);
     }
 }

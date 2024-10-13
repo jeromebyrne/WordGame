@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -174,5 +175,49 @@ public static class BoardDataHelper
         }
 
         return true; // All gaps are filled with committed tiles, so the tiles are contiguous
+    }
+
+    public static Tuple<bool, Vector2Int> FindNextNearestUnoccupiedSlot(Vector2Int currentSlot, BoardState boardState)
+    {
+        BoardSlotState currentSlotState = boardState.GetSlotState(currentSlot.x, currentSlot.y);
+
+        if (!currentSlotState.IsOccupied)
+        {
+            return new Tuple<bool, Vector2Int>(true, currentSlot);
+        }
+
+        // current slot is occupied so try neighbors
+        int totalRows = boardState.Dimensions.x;
+        int totalColumns = boardState.Dimensions.y;
+
+        for (int searchRadius = 1; searchRadius < Mathf.Max(totalRows, totalColumns); searchRadius++)
+        {
+            for (int offsetX = -searchRadius; offsetX <= searchRadius; offsetX++)
+            {
+                for (int offsetY = -searchRadius; offsetY <= searchRadius; offsetY++)
+                {
+                    // Skip the current slot being checked
+                    if (offsetX == 0 && offsetY == 0) continue;
+
+                    int candidateX = currentSlot.x + offsetX;
+                    int candidateY = currentSlot.y + offsetY;
+
+                    // Check if the candidate slot is within the board boundaries
+                    if (candidateX >= 0 && candidateX < totalRows && candidateY >= 0 && candidateY < totalColumns)
+                    {
+                        BoardSlotState candidateSlotState = boardState.GetSlotState(candidateX, candidateY);
+
+                        // Return the first unoccupied slot found
+                        if (!candidateSlotState.IsOccupied)
+                        {
+                            return new Tuple<bool, Vector2Int>(true, new Vector2Int(candidateX, candidateY));
+                        }
+                    }
+                }
+            }
+        }
+
+        // No unoccupied slot found
+        return new Tuple<bool, Vector2Int>(false, Vector2Int.zero);
     }
 }

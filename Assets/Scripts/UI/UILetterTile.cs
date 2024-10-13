@@ -10,7 +10,7 @@ public class UILetterTile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
     [SerializeField] RectTransform _rectTransform;
     [SerializeField] Image _image;
 
-    static readonly Vector3 _selectedScale = new Vector3(0.75f, 0.75f, 1.0f);
+    static readonly Vector3 _selectedScale = new Vector3(1.0f, 1.0f, 1.0f);
     static readonly Color _selectedColor = new Color(0.72f, 0.36f, 0.125f, 0.6f);
     static readonly Color _unselectedColor = new Color(0.72f, 0.36f, 0.125f, 1.0f);
 

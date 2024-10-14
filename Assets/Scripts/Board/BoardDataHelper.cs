@@ -25,11 +25,49 @@ public static class BoardDataHelper
 
     public static string GetWordFromTiles(IReadOnlyBoardState boardState, List<Vector2Int> contiguousTiles)
     {
+        // Ensure there are tiles to process
+        if (contiguousTiles == null || contiguousTiles.Count == 0)
+            return "";
+
+        // Determine if the tiles are aligned horizontally (same y values) or vertically (same x values)
+        bool isHorizontal = true;
+        bool isVertical = true;
+
+        int firstX = contiguousTiles[0].x;
+        int firstY = contiguousTiles[0].y;
+
+        foreach (var tile in contiguousTiles)
+        {
+            if (tile.y != firstY)
+                isHorizontal = false;
+            if (tile.x != firstX)
+                isVertical = false;
+        }
+
+        // If neither horizontal nor vertical, return empty (invalid state)
+        if (!isHorizontal && !isVertical)
+        {
+            Debug.LogError("Tiles are neither aligned horizontally nor vertically.");
+            return "";
+        }
+
+        // Sort the tiles based on the orientation
+        if (isHorizontal)
+        {
+            // Sort left to right (by x-coordinate)
+            contiguousTiles.Sort((a, b) => a.x.CompareTo(b.x));
+        }
+        else if (isVertical)
+        {
+            // Sort top to bottom (by y-coordinate) - highest y first, so reverse the order
+            contiguousTiles.Sort((a, b) => b.y.CompareTo(a.y));
+        }
+
+        // Construct the word by iterating over the sorted tiles
         string word = "";
         foreach (var index in contiguousTiles)
         {
             var s = boardState.GetSlotState(index.x, index.y);
-
             word += s.OccupiedLetter.Character.ToString();
         }
 
@@ -177,7 +215,7 @@ public static class BoardDataHelper
         return true; // All gaps are filled with committed tiles, so the tiles are contiguous
     }
 
-    public static Tuple<bool, Vector2Int> FindNextNearestUnoccupiedSlot(Vector2Int currentSlot, BoardState boardState)
+    public static Tuple<bool, Vector2Int> FindNextNearestUnoccupiedSlot(Vector2Int currentSlot, BoardState boardState, Vector2 worldPos, BoardVisual boardVisual)
     {
         BoardSlotState currentSlotState = boardState.GetSlotState(currentSlot.x, currentSlot.y);
 
@@ -186,7 +224,11 @@ public static class BoardDataHelper
             return new Tuple<bool, Vector2Int>(true, currentSlot);
         }
 
-        // current slot is occupied so try neighbors
+        // Variables to track the nearest slot
+        Vector2Int nearestSlot = new Vector2Int(-1, -1);
+        float nearestDistance = float.MaxValue;
+
+        // current slot is occupied, so search neighbors
         int totalRows = boardState.Dimensions.x;
         int totalColumns = boardState.Dimensions.y;
 
@@ -207,17 +249,34 @@ public static class BoardDataHelper
                     {
                         BoardSlotState candidateSlotState = boardState.GetSlotState(candidateX, candidateY);
 
-                        // Return the first unoccupied slot found
+                        // If the slot is unoccupied, calculate the distance to worldPos
                         if (!candidateSlotState.IsOccupied)
                         {
-                            return new Tuple<bool, Vector2Int>(true, new Vector2Int(candidateX, candidateY));
+                            // Get the world position of the candidate slot
+                            Vector2 candidateWorldPos = boardVisual.GetWorldPositionForGridIndex(new Vector2Int(candidateX, candidateY));
+
+                            // Calculate the distance to the provided worldPos
+                            float distance = Vector2.Distance(worldPos, candidateWorldPos);
+
+                            // Check if this is the closest unoccupied slot found
+                            if (distance < nearestDistance)
+                            {
+                                nearestDistance = distance;
+                                nearestSlot = new Vector2Int(candidateX, candidateY);
+                            }
                         }
                     }
                 }
             }
         }
 
-        // No unoccupied slot found
-        return new Tuple<bool, Vector2Int>(false, Vector2Int.zero);
+        // If a nearest slot was found, return it
+        if (nearestSlot != new Vector2Int(-1, -1))
+        {
+            return new Tuple<bool, Vector2Int>(true, nearestSlot);
+        }
+
+        // If no unoccupied slots were found, return false
+        return new Tuple<bool, Vector2Int>(false, currentSlot);
     }
 }

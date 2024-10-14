@@ -102,7 +102,7 @@ public class GameBoard : MonoBehaviour
     {
         Vector2Int nearestSlotIndex = _boardVisual.GetNearestSlotIndex(worldPos);
 
-        var retTuple = BoardDataHelper.FindNextNearestUnoccupiedSlot(nearestSlotIndex, _boardState);
+        var retTuple = BoardDataHelper.FindNextNearestUnoccupiedSlot(nearestSlotIndex, _boardState, worldPos, _boardVisual);
 
         if (retTuple.Item1 == false)
         {

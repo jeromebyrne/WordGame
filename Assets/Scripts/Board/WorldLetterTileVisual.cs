@@ -7,14 +7,14 @@ public class WorldLetterTileVisual : MonoBehaviour
     [SerializeField] private TMP_Text _scoreText = null;
     [SerializeField] private SpriteRenderer _spriteRenderer = null;
 
-    public Vector2Int GridIndex { get; private set; }
+    public BoardSlotIndex GridIndex { get; private set; }
     public int PlayerIndex { get; set; }
 
     public LetterDataObj LetterData { get; private set; }
 
     public SpriteRenderer SpriteRenderer { get { return _spriteRenderer; } }
 
-    public void SetGridIndex(Vector2Int gridIndex)
+    public void SetGridIndex(BoardSlotIndex gridIndex)
     {
         GridIndex = gridIndex;
     }

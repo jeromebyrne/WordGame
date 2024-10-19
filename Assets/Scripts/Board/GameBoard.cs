@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class GameBoard : MonoBehaviour
@@ -71,7 +72,7 @@ public class GameBoard : MonoBehaviour
         var worldTile = evt.LetterTile;
 
         // Update the board data
-        BoardSlotState slotState = _boardState.GetSlotState(worldTile.GridIndex.x, worldTile.GridIndex.x);
+        BoardSlotState slotState = _boardState.GetSlotState(worldTile.GridIndex);
 
         if (slotState.IsTileCommitted)
         {
@@ -80,7 +81,7 @@ public class GameBoard : MonoBehaviour
         }
 
         slotState.IsOccupied = false;
-        _boardState.UpdateSlotState(worldTile.GridIndex.x, worldTile.GridIndex.y, slotState);
+        _boardState.UpdateSlotState(worldTile.GridIndex, slotState);
     }
 
     private void OnWorldTileEndDrag(WorldTileEndDragEvent evt)
@@ -100,7 +101,7 @@ public class GameBoard : MonoBehaviour
 
     private void SnapWorldTile(int playerIndex, WorldLetterTileVisual worldTile, Vector2 worldPos)
     {
-        Vector2Int nearestSlotIndex = _boardVisual.GetNearestSlotIndex(worldPos);
+        BoardSlotIndex nearestSlotIndex = _boardVisual.GetNearestSlotIndex(worldPos);
 
         var retTuple = BoardDataHelper.FindNextNearestUnoccupiedSlot(nearestSlotIndex, _boardState, worldPos, _boardVisual);
 
@@ -113,7 +114,7 @@ public class GameBoard : MonoBehaviour
             return;
         }
 
-        Vector2Int nearestUnoccupiedIndex = retTuple.Item2;
+        BoardSlotIndex nearestUnoccupiedIndex = retTuple.Item2;
 
         worldTile.SetGridIndex(nearestUnoccupiedIndex);
 
@@ -122,11 +123,11 @@ public class GameBoard : MonoBehaviour
         worldTile.transform.position = snappedPosition;
 
         // Update the board data
-        BoardSlotState slotState = _boardState.GetSlotState(nearestUnoccupiedIndex.x, nearestUnoccupiedIndex.y);
+        BoardSlotState slotState = _boardState.GetSlotState(nearestUnoccupiedIndex);
 
         slotState.IsOccupied = true;
         slotState.OccupiedLetter = worldTile.LetterData;
-        _boardState.UpdateSlotState(nearestUnoccupiedIndex.x, nearestUnoccupiedIndex.y, slotState);
+        _boardState.UpdateSlotState(nearestUnoccupiedIndex, slotState);
     }
 
     private void PlaceUITile(int playerIndex, UILetterTile uiTile, Vector2 worldPos)
@@ -143,5 +144,16 @@ public class GameBoard : MonoBehaviour
 
         var postEvt = UITilePlacedonBoardEvent.Get(playerIndex, uiTile);
         GameEventHandler.Instance.TriggerEvent(postEvt);
+    }
+
+    public void CommitTiles(List<BoardSlotIndex> tilesToCommit)
+    {
+        foreach (var index in tilesToCommit)
+        {
+            var slotState = _boardState.GetSlotState(index);
+            slotState.IsTileCommitted = true;
+            _boardState.UpdateSlotState(index, slotState);
+        }
+
     }
 }

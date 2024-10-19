@@ -17,10 +17,16 @@ public struct BoardSlotState
     public Vector2Int BoardIndex { get; private set; }
 }
 
+public struct BoardSlotIndex
+{
+    public int Column;
+    public int Row;
+}
+
 public interface IReadOnlyBoardState
 {
     Vector2Int Dimensions { get; }
-    BoardSlotState GetSlotState(int row, int column);
+    BoardSlotState GetSlotState(BoardSlotIndex index);
 }
 
 public class BoardState : IReadOnlyBoardState
@@ -46,25 +52,25 @@ public class BoardState : IReadOnlyBoardState
         }
     }
 
-    public BoardSlotState GetSlotState(int row, int column)
+    public BoardSlotState GetSlotState(BoardSlotIndex index)
     {
-        return _slots[row][column];
+        return _slots[index.Row][index.Column];
     }
 
-    public void UpdateSlotState(int row, int column, BoardSlotState slotState)
+    public void UpdateSlotState(BoardSlotIndex index, BoardSlotState slotState)
     {
-        if (row >= _slots.Count)
+        if (index.Row >= _slots.Count)
         {
             Debug.Log("UpdateSlotState: row is out of bounds");
             return;
         }
 
-        if (column >= _slots[row].Count)
+        if (index.Column >= _slots[index.Column].Count)
         {
             Debug.Log("UpdateSlotState: column is out of bounds");
             return;
         }
 
-        _slots[row][column] = slotState;
+        _slots[index.Row][index.Column] = slotState;
     }
 }

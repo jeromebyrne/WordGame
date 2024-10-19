@@ -4,18 +4,21 @@ using UnityEngine;
 
 public static class BoardDataHelper
 {
-    public static List<Vector2Int> GetUncommittedTiles(IReadOnlyBoardState boardState)
+    public static List<BoardSlotIndex> GetUncommittedTiles(IReadOnlyBoardState boardState)
     {
-        List<Vector2Int> uncommittedTiles = new List<Vector2Int>();
+        List<BoardSlotIndex> uncommittedTiles = new List<BoardSlotIndex>();
 
         for (int row = 0; row < boardState.Dimensions.y; row++)
         {
             for (int column = 0; column < boardState.Dimensions.x; column++)
             {
-                BoardSlotState slot = boardState.GetSlotState(row, column);
+                BoardSlotIndex index;
+                index.Row = row;
+                index.Column = column;
+                BoardSlotState slot = boardState.GetSlotState(index);
                 if (slot.IsOccupied && !slot.IsTileCommitted)
                 {
-                    uncommittedTiles.Add(new Vector2Int(row, column));
+                    uncommittedTiles.Add(index);
                 }
             }
         }
@@ -23,7 +26,7 @@ public static class BoardDataHelper
         return uncommittedTiles;
     }
 
-    public static string GetWordFromTiles(IReadOnlyBoardState boardState, List<Vector2Int> contiguousTiles)
+    public static string GetWordFromTiles(IReadOnlyBoardState boardState, List<BoardSlotIndex> contiguousTiles)
     {
         // Ensure there are tiles to process
         if (contiguousTiles == null || contiguousTiles.Count == 0)
@@ -33,20 +36,22 @@ public static class BoardDataHelper
         bool isHorizontal = true;
         bool isVertical = true;
 
-        int firstX = contiguousTiles[0].x;
-        int firstY = contiguousTiles[0].y;
+        int firstX = contiguousTiles[0].Column;
+        int firstY = contiguousTiles[0].Row;
 
         foreach (var tile in contiguousTiles)
         {
-            if (tile.y != firstY)
+            if (tile.Row != firstY)
                 isHorizontal = false;
-            if (tile.x != firstX)
+            if (tile.Column != firstX)
                 isVertical = false;
         }
 
         // If neither horizontal nor vertical, return empty (invalid state)
         if (!isHorizontal && !isVertical)
         {
+            // This shouldn't happen as we should only hit this function
+            // if the tiles are in a contiguous line horizontally or vertically
             Debug.LogError("Tiles are neither aligned horizontally nor vertically.");
             return "";
         }
@@ -55,33 +60,33 @@ public static class BoardDataHelper
         if (isHorizontal)
         {
             // Sort left to right (by x-coordinate)
-            contiguousTiles.Sort((a, b) => a.x.CompareTo(b.x));
+            contiguousTiles.Sort((a, b) => a.Column.CompareTo(b.Column));
         }
         else if (isVertical)
         {
             // Sort top to bottom (by y-coordinate) - highest y first, so reverse the order
-            contiguousTiles.Sort((a, b) => b.y.CompareTo(a.y));
+            contiguousTiles.Sort((a, b) => b.Row.CompareTo(a.Row));
         }
 
         // Construct the word by iterating over the sorted tiles
         string word = "";
         foreach (var index in contiguousTiles)
         {
-            var s = boardState.GetSlotState(index.x, index.y);
+            var s = boardState.GetSlotState(index);
             word += s.OccupiedLetter.Character.ToString();
         }
 
         return word;
     }
 
-    public static int GetScoreFromTiles(IReadOnlyBoardState boardState, List<Vector2Int> contiguousTiles)
+    public static int GetScoreFromTiles(IReadOnlyBoardState boardState, List<BoardSlotIndex> contiguousTiles)
     {
         // TODO: future update: check tile multipliers
         int score = 0;
 
         foreach (var index in contiguousTiles)
         {
-            var s = boardState.GetSlotState(index.x, index.y);
+            var s = boardState.GetSlotState(index);
 
             score += s.OccupiedLetter.Score;
         }
@@ -89,9 +94,9 @@ public static class BoardDataHelper
         return score;
     }
 
-    public static bool AreTilesContiguous(List<Vector2Int> uncommittedTiles, IReadOnlyBoardState boardState, out List<Vector2Int> contiguousTiles)
+    public static bool AreTilesContiguous(List<BoardSlotIndex> uncommittedTiles, IReadOnlyBoardState boardState, out List<BoardSlotIndex> contiguousTiles)
     {
-        contiguousTiles = new List<Vector2Int>();
+        contiguousTiles = new List<BoardSlotIndex>();
 
         if (uncommittedTiles.Count < 1)
         {
@@ -110,11 +115,11 @@ public static class BoardDataHelper
 
         for (int i = 1; i < uncommittedTiles.Count; i++)
         {
-            if (uncommittedTiles[i].x != uncommittedTiles[0].x)
+            if (uncommittedTiles[i].Column != uncommittedTiles[0].Column)
             {
                 allInSameRow = false;
             }
-            if (uncommittedTiles[i].y != uncommittedTiles[0].y)
+            if (uncommittedTiles[i].Row != uncommittedTiles[0].Row)
             {
                 allInSameColumn = false;
             }
@@ -140,16 +145,15 @@ public static class BoardDataHelper
         return false;
     }
 
-    // Helper method to sort uncommitted tiles by column (y-axis) for rows
-    private static void SortByColumn(List<Vector2Int> tiles)
+    private static void SortByColumn(List<BoardSlotIndex> tiles)
     {
         for (int i = 0; i < tiles.Count - 1; i++)
         {
             for (int j = i + 1; j < tiles.Count; j++)
             {
-                if (tiles[i].y > tiles[j].y)
+                if (tiles[i].Row > tiles[j].Row)
                 {
-                    Vector2Int temp = tiles[i];
+                    BoardSlotIndex temp = tiles[i];
                     tiles[i] = tiles[j];
                     tiles[j] = temp;
                 }
@@ -157,16 +161,15 @@ public static class BoardDataHelper
         }
     }
 
-    // Helper method to sort uncommitted tiles by row (x-axis) for columns
-    private static void SortByRow(List<Vector2Int> tiles)
+    private static void SortByRow(List<BoardSlotIndex> tiles)
     {
         for (int i = 0; i < tiles.Count - 1; i++)
         {
             for (int j = i + 1; j < tiles.Count; j++)
             {
-                if (tiles[i].x > tiles[j].x)
+                if (tiles[i].Column > tiles[j].Column)
                 {
-                    Vector2Int temp = tiles[i];
+                    BoardSlotIndex temp = tiles[i];
                     tiles[i] = tiles[j];
                     tiles[j] = temp;
                 }
@@ -174,9 +177,9 @@ public static class BoardDataHelper
         }
     }
 
-    private static bool CheckContiguityWithGaps(List<Vector2Int> tiles, bool isRowCheck, IReadOnlyBoardState boardState, out List<Vector2Int> contiguousTiles)
+    private static bool CheckContiguityWithGaps(List<BoardSlotIndex> tiles, bool isRowCheck, IReadOnlyBoardState boardState, out List<BoardSlotIndex> contiguousTiles)
     {
-        contiguousTiles = new List<Vector2Int>();
+        contiguousTiles = new List<BoardSlotIndex>();
 
         // Add the first tile to the contiguous list
         if (tiles.Count > 0)
@@ -186,21 +189,30 @@ public static class BoardDataHelper
 
         for (int i = 1; i < tiles.Count; i++)
         {
-            Vector2Int currentTile = tiles[i];
-            Vector2Int previousTile = tiles[i - 1];
+            BoardSlotIndex currentTile = tiles[i];
+            BoardSlotIndex previousTile = tiles[i - 1];
 
-            int distance = isRowCheck ? currentTile.y - previousTile.y : currentTile.x - previousTile.x;
+            int distance = isRowCheck ? currentTile.Row - previousTile.Row : currentTile.Column - previousTile.Column;
 
             if (distance > 1)
             {
                 // Check for gaps: Ensure that any gaps are filled by committed tiles
                 for (int j = 1; j < distance; j++)
                 {
-                    Vector2Int intermediateTile = isRowCheck
-                        ? new Vector2Int(previousTile.x, previousTile.y + j)
-                        : new Vector2Int(previousTile.x + j, previousTile.y);
+                    BoardSlotIndex intermediateTile;
 
-                    BoardSlotState intermediateSlot = boardState.GetSlotState(intermediateTile.x, intermediateTile.y);
+                    if (isRowCheck)
+                    {
+                        intermediateTile.Row = previousTile.Row + j;
+                        intermediateTile.Column = previousTile.Column;
+                    }
+                    else
+                    {
+                        intermediateTile.Row = previousTile.Row;
+                        intermediateTile.Column = previousTile.Column + j;
+                    }
+
+                    BoardSlotState intermediateSlot = boardState.GetSlotState(intermediateTile);
                     if (!intermediateSlot.IsOccupied || !intermediateSlot.IsTileCommitted)
                     {
                         contiguousTiles.Clear(); // Clear contiguous tiles if a gap can't be filled
@@ -215,17 +227,20 @@ public static class BoardDataHelper
         return true; // All gaps are filled with committed tiles, so the tiles are contiguous
     }
 
-    public static Tuple<bool, Vector2Int> FindNextNearestUnoccupiedSlot(Vector2Int currentSlot, BoardState boardState, Vector2 worldPos, BoardVisual boardVisual)
+    public static Tuple<bool, BoardSlotIndex> FindNextNearestUnoccupiedSlot(BoardSlotIndex currentSlot, IReadOnlyBoardState boardState, Vector2 worldPos, BoardVisual boardVisual)
     {
-        BoardSlotState currentSlotState = boardState.GetSlotState(currentSlot.x, currentSlot.y);
+        BoardSlotState currentSlotState = boardState.GetSlotState(currentSlot);
 
         if (!currentSlotState.IsOccupied)
         {
-            return new Tuple<bool, Vector2Int>(true, currentSlot);
+            return new Tuple<bool, BoardSlotIndex>(true, currentSlot);
         }
 
         // Variables to track the nearest slot
-        Vector2Int nearestSlot = new Vector2Int(-1, -1);
+        BoardSlotIndex nearestSlot;
+        nearestSlot.Row = -1;
+        nearestSlot.Column = -1;
+
         float nearestDistance = float.MaxValue;
 
         // current slot is occupied, so search neighbors
@@ -241,19 +256,20 @@ public static class BoardDataHelper
                     // Skip the current slot being checked
                     if (offsetX == 0 && offsetY == 0) continue;
 
-                    int candidateX = currentSlot.x + offsetX;
-                    int candidateY = currentSlot.y + offsetY;
+                    BoardSlotIndex candidate;
+                    candidate.Column = currentSlot.Column + offsetX;
+                    candidate.Row = currentSlot.Row + offsetY;
 
                     // Check if the candidate slot is within the board boundaries
-                    if (candidateX >= 0 && candidateX < totalRows && candidateY >= 0 && candidateY < totalColumns)
+                    if (candidate.Column >= 0 && candidate.Column < totalRows && candidate.Row >= 0 && candidate.Row < totalColumns)
                     {
-                        BoardSlotState candidateSlotState = boardState.GetSlotState(candidateX, candidateY);
+                        BoardSlotState candidateSlotState = boardState.GetSlotState(candidate);
 
                         // If the slot is unoccupied, calculate the distance to worldPos
                         if (!candidateSlotState.IsOccupied)
                         {
                             // Get the world position of the candidate slot
-                            Vector2 candidateWorldPos = boardVisual.GetWorldPositionForGridIndex(new Vector2Int(candidateX, candidateY));
+                            Vector2 candidateWorldPos = boardVisual.GetWorldPositionForGridIndex(candidate);
 
                             // Calculate the distance to the provided worldPos
                             float distance = Vector2.Distance(worldPos, candidateWorldPos);
@@ -262,7 +278,7 @@ public static class BoardDataHelper
                             if (distance < nearestDistance)
                             {
                                 nearestDistance = distance;
-                                nearestSlot = new Vector2Int(candidateX, candidateY);
+                                nearestSlot = candidate;
                             }
                         }
                     }
@@ -271,12 +287,12 @@ public static class BoardDataHelper
         }
 
         // If a nearest slot was found, return it
-        if (nearestSlot != new Vector2Int(-1, -1))
+        if (nearestSlot.Row != -1 && nearestSlot.Column != -1)
         {
-            return new Tuple<bool, Vector2Int>(true, nearestSlot);
+            return new Tuple<bool, BoardSlotIndex>(true, nearestSlot);
         }
 
         // If no unoccupied slots were found, return false
-        return new Tuple<bool, Vector2Int>(false, currentSlot);
+        return new Tuple<bool, BoardSlotIndex>(false, currentSlot);
     }
 }

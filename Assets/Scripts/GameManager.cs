@@ -67,12 +67,11 @@ public class GameManager : MonoBehaviour
     private void OnAttemptPlayTurn(UIPlayButtonPressedEvent evt)
     {
         // check if we can play this turn
-
         var boardState = _gameBoard.GetBoardState();
 
         var uncommittedTiles = BoardDataHelper.GetUncommittedTiles(boardState);
 
-        List<Vector2Int> contiguousTiles = new List<Vector2Int>();
+        List<BoardSlotIndex> contiguousTiles = new List<BoardSlotIndex>();
 
         if (!BoardDataHelper.AreTilesContiguous(uncommittedTiles, boardState, out contiguousTiles))
         {
@@ -93,6 +92,8 @@ public class GameManager : MonoBehaviour
         Debug.Log(word + " is a valid word!");
 
         int score = BoardDataHelper.GetScoreFromTiles(boardState, contiguousTiles);
+
+        _gameBoard.CommitTiles(uncommittedTiles);
 
         Debug.Log("Score for " + word + " is: " + score.ToString());
 

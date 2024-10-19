@@ -13,7 +13,7 @@ public class BoardVisual : MonoBehaviour
 
     public List<SpriteRenderer> GetTilesSpriteRenderers() { return _letterTilesSprites; }
 
-    public Vector3 GetWorldPositionForGridIndex(Vector2Int gridIndex)
+    public Vector3 GetWorldPositionForGridIndex(BoardSlotIndex gridIndex)
     {
         // Get the board's bounds
         Bounds boardBounds = _boardSprite.bounds;
@@ -23,8 +23,8 @@ public class BoardVisual : MonoBehaviour
         float boardHalfHeight = boardBounds.size.y * 0.5f;
 
         // Calculate the world position based on grid index and slot dimensions
-        float worldX = (gridIndex.x * SlotWidth) - boardHalfWidth + SlotWidth * 0.5f /*+ boardBounds.min.x*/;
-        float worldY = (gridIndex.y * SlotHeight) - boardHalfHeight + SlotHeight * 0.5f /*+ boardBounds.min.y*/;
+        float worldX = (gridIndex.Column * SlotWidth) - boardHalfWidth + SlotWidth * 0.5f /*+ boardBounds.min.x*/;
+        float worldY = (gridIndex.Row * SlotHeight) - boardHalfHeight + SlotHeight * 0.5f /*+ boardBounds.min.y*/;
 
         // Return the calculated world position
         return new Vector3(worldX, worldY, -2.0f); // TODO: cache these positions
@@ -113,7 +113,7 @@ public class BoardVisual : MonoBehaviour
         return spriteBounds.Contains(worldPosition);
     }
 
-    public Vector2Int GetNearestSlotIndex(Vector3 worldPosition)
+    public BoardSlotIndex GetNearestSlotIndex(Vector3 worldPosition)
     {
         int rows = GameSettingsConfigManager.GameSettings._boardDimensions.x;
         int columns = GameSettingsConfigManager.GameSettings._boardDimensions.y;
@@ -130,6 +130,9 @@ public class BoardVisual : MonoBehaviour
             Debug.Log("Position is outside the sprite bounds.");
         }
 
-        return new Vector2Int(column, row); // TODO: don't do new
+        BoardSlotIndex index;
+        index.Row = row;
+        index.Column = column;
+        return index;
     }
 }

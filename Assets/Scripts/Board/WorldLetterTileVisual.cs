@@ -9,10 +9,21 @@ public class WorldLetterTileVisual : MonoBehaviour
 
     public BoardSlotIndex GridIndex { get; private set; }
     public int PlayerIndex { get; set; }
+    public bool IsLocked { get; private set; }
 
     public LetterDataObj LetterData { get; private set; }
 
     public SpriteRenderer SpriteRenderer { get { return _spriteRenderer; } }
+
+    private void OnEnable()
+    {
+        GameEventHandler.Instance.Subscribe<TilesCommittedEvent>(OnTilesCommitted);
+    }
+
+    private void OnDisable()
+    {
+        GameEventHandler.Instance.Unsubscribe<TilesCommittedEvent>(OnTilesCommitted);
+    }
 
     public void SetGridIndex(BoardSlotIndex gridIndex)
     {
@@ -26,5 +37,23 @@ public class WorldLetterTileVisual : MonoBehaviour
         PlayerIndex = playerIndex;
 
         LetterData = letterData;
+    }
+
+    private void OnTilesCommitted(TilesCommittedEvent evt)
+    {
+        if (IsLocked)
+        {
+            // we don't care because we have already been locked
+            return;
+        }
+
+        foreach (var index in evt.CommittedTiles)
+        {
+            if (index == GridIndex)
+            {
+                IsLocked = true;
+                return;
+            }
+        }
     }
 }

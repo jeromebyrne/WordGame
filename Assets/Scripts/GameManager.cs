@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SocialPlatforms.Impl;
 
 public class GameManager : MonoBehaviour
 {
@@ -10,6 +11,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameBoard _gameBoard;
     [SerializeField] private WorldTileDragHandler _worldTileDragHandler;
     [SerializeField] private BoardVisual _boardVisual;
+
+    private int _currentPlayerIndex = 1;
 
     private void OnEnable()
     {
@@ -34,6 +37,9 @@ public class GameManager : MonoBehaviour
         _gameBoard.Init();
 
         _worldTileDragHandler.Init();
+
+        _currentPlayerIndex = 1;
+        GameEventHandler.Instance.TriggerEvent(ConfirmSwitchPlayerEvent.Get(-1, 1));
     }
 
     void AssignInitialLettersToPlayers()
@@ -50,7 +56,6 @@ public class GameManager : MonoBehaviour
 
                 var evt = PlayerLetterAssignedEvent.Get(_playerOneState, randomLetter);
                 GameEventHandler.Instance.TriggerEvent(evt);
-
             }
             else
             {
@@ -75,28 +80,42 @@ public class GameManager : MonoBehaviour
 
         if (!BoardDataHelper.AreTilesContiguous(uncommittedTiles, boardState, out contiguousTiles))
         {
-            Debug.Log("Tiles are not contiguous!");
+            Debug.Log("Placed tiles are not contiguous!");
             return;
         }
 
-        Debug.Log("Tiles are contiguous!");
+        Debug.Log("Placed tiles are contiguous!");
 
-        string word = BoardDataHelper.GetWordFromTiles(boardState, contiguousTiles);
+        // if there are 0 committed tiles it means it's the first turn
+        bool firstTurn = boardState.GetCommittedTileCount() == 0;
 
-        if (!WordConfigManager.IsValidWord(word))
+        if (!firstTurn)
         {
-            Debug.Log(word + " is NOT a valid word!");
+            bool connecting = BoardDataHelper.ArePlacedTilesConnectingWithCommittedTile(boardState, uncommittedTiles);
+            if (!connecting)
+            {
+                Debug.Log("Placed tiles are not connecting with previously placed tiles");
+                return;
+            }
+        }
+        
+        var wordAndScoreTuple = BoardDataHelper.GetWordAndScoreFromTiles(boardState, contiguousTiles);
+
+        if (!WordConfigManager.IsValidWord(wordAndScoreTuple.word))
+        {
+            Debug.Log(wordAndScoreTuple.word + " is NOT a valid word!");
             return;
         }
 
-        Debug.Log(word + " is a valid word!");
+        Debug.Log(wordAndScoreTuple.word + " is a valid word!");
 
-        int score = BoardDataHelper.GetScoreFromTiles(boardState, contiguousTiles);
+        Debug.Log("Score for " + wordAndScoreTuple.word + " is: " + wordAndScoreTuple.score.ToString());
 
         _gameBoard.CommitTiles(uncommittedTiles);
 
-        Debug.Log("Score for " + word + " is: " + score.ToString());
+        int nextPlayerIndex = _currentPlayerIndex == 1 ? 2 : 1;
+        GameEventHandler.Instance.TriggerEvent(ConfirmSwitchPlayerEvent.Get(_currentPlayerIndex, nextPlayerIndex));
 
-        // TODO: increase player score and move to next players turn
+        _currentPlayerIndex = nextPlayerIndex;
     }
 }

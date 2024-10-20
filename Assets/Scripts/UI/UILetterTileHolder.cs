@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -31,9 +30,8 @@ public class UILetterTileHolder : MonoBehaviour
         CreateTilePositions(1);
         CreateTilePositions(2);
 
-        // TEMP testing
-        _playersTileParents[1].SetActive(true);
         _playersTileParents[1].SetActive(false);
+        _playersTileParents[2].SetActive(false);
 
         _initialized = true;
     }
@@ -41,15 +39,17 @@ public class UILetterTileHolder : MonoBehaviour
     private void OnEnable()
     {
         GameEventHandler.Instance.Subscribe<PlayerLetterAssignedEvent>(OnPlayerLetterAssigned);
-        GameEventHandler.Instance.Subscribe<SendTileToHolderEvent>(OnTileReturnRequest);
+        GameEventHandler.Instance.Subscribe<ReturnTileToHolderEvent>(OnTileReturnRequest);
         GameEventHandler.Instance.Subscribe<UITilePlacedonBoardEvent>(OnTilePlaced);
+        GameEventHandler.Instance.Subscribe<ConfirmSwitchPlayerEvent>(OnPlayerSwitch);
     }
 
     private void OnDisable()
     {
         GameEventHandler.Instance.Unsubscribe<PlayerLetterAssignedEvent>(OnPlayerLetterAssigned);
-        GameEventHandler.Instance.Unsubscribe<SendTileToHolderEvent>(OnTileReturnRequest);
+        GameEventHandler.Instance.Unsubscribe<ReturnTileToHolderEvent>(OnTileReturnRequest);
         GameEventHandler.Instance.Unsubscribe<UITilePlacedonBoardEvent>(OnTilePlaced);
+        GameEventHandler.Instance.Unsubscribe<ConfirmSwitchPlayerEvent>(OnPlayerSwitch);
     }
 
     void CreateTilePositions(int playerIndex)
@@ -111,15 +111,17 @@ public class UILetterTileHolder : MonoBehaviour
         AssignTileToNextAvailableSlot(evt.PlayerState.PlayerIndex, tileVisual);
     }
 
-    private void OnTileReturnRequest(SendTileToHolderEvent evt)
+    private void OnTileReturnRequest(ReturnTileToHolderEvent evt)
     {
-        var tilePlacements = _tilePlacementPlayerMap[evt.PlayerIndex];
+        TilePlacementInfo tilePlacements = _tilePlacementPlayerMap[evt.PlayerIndex];
 
         foreach (var tuple in tilePlacements)
         {
-            if (tuple.Item2 == evt.Tile.gameObject)
+            UILetterTile letterTileComponent = tuple.Item2.GetComponent<UILetterTile>();
+            if (letterTileComponent.LetterInfo.UniqueId == evt.LetterId)
             {
-                evt.Tile.transform.localPosition = tuple.Item1;
+                letterTileComponent.gameObject.SetActive(true);
+                letterTileComponent.transform.localPosition = tuple.Item1;
                 return;
             }
         }
@@ -132,6 +134,8 @@ public class UILetterTileHolder : MonoBehaviour
 
         evt.Tile.gameObject.SetActive(false);
     }
+
+    // TODO: on tiles committed
 
     bool HasAvailableSlotForTile(int playerIndex)
     {
@@ -167,5 +171,20 @@ public class UILetterTileHolder : MonoBehaviour
         }
 
         Debug.LogError("Could not find an empty Tile Slot in AssignTileToNextAvailableSlot");
+    }
+
+    void OnPlayerSwitch(ConfirmSwitchPlayerEvent switchEvent)
+    {
+        // TODO: Do any cleanup for the previous player
+
+        if (_playersTileParents.ContainsKey(switchEvent.EndPlayerIndex))
+        {
+            _playersTileParents[switchEvent.EndPlayerIndex].SetActive(false);
+        }
+
+        if (_playersTileParents.ContainsKey(switchEvent.NextPlayerIndex))
+        {
+            _playersTileParents[switchEvent.NextPlayerIndex].SetActive(true);
+        }
     }
 }

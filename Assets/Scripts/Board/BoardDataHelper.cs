@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public static class BoardDataHelper
@@ -26,20 +27,77 @@ public static class BoardDataHelper
         return uncommittedTiles;
     }
 
-    public static string GetWordFromTiles(IReadOnlyBoardState boardState, List<BoardSlotIndex> contiguousTiles)
+    public static bool ArePlacedTilesConnectingWithCommittedTile(IReadOnlyBoardState boardState, List<BoardSlotIndex> placedTiles)
+    {
+        // Ensure there are tiles to check
+        if (placedTiles == null || placedTiles.Count == 0)
+            return false;
+
+        // Check if any placed tile is adjacent to a committed tile
+        foreach (var placedTile in placedTiles)
+        {
+            // Get the neighboring tiles
+            var neighbors = GetNeighboringIndices(placedTile, boardState.Dimensions);
+
+            // Check if any neighbor is a committed tile
+            foreach (var neighbor in neighbors)
+            {
+                BoardSlotState neighborSlotState = boardState.GetSlotState(neighbor);
+
+                if (neighborSlotState.IsOccupied && neighborSlotState.IsTileCommitted)
+                {
+                    return true; // The tile is connected to a committed tile
+                }
+            }
+        }
+
+        // If no placed tile connects to a committed tile, return false
+        return false;
+    }
+
+    // Helper function to get the indices of the neighboring slots (up, down, left, right)
+    private static List<BoardSlotIndex> GetNeighboringIndices(BoardSlotIndex index, Vector2Int boardDimensions)
+    {
+        List<BoardSlotIndex> neighbors = new List<BoardSlotIndex>();
+
+        // Up
+        if (index.Row > 0)
+        {
+            neighbors.Add(new BoardSlotIndex { Row = index.Row - 1, Column = index.Column });
+        }
+        // Down
+        if (index.Row < boardDimensions.y - 1)
+        {
+            neighbors.Add(new BoardSlotIndex { Row = index.Row + 1, Column = index.Column });
+        }
+        // Left
+        if (index.Column > 0)
+        {
+            neighbors.Add(new BoardSlotIndex { Row = index.Row, Column = index.Column - 1 });
+        }
+        // Right
+        if (index.Column < boardDimensions.x - 1)
+        {
+            neighbors.Add(new BoardSlotIndex { Row = index.Row, Column = index.Column + 1 });
+        }
+
+        return neighbors;
+    }
+
+    public static (string word, int score) GetWordAndScoreFromTiles(IReadOnlyBoardState boardState, List<BoardSlotIndex> placedTiles)
     {
         // Ensure there are tiles to process
-        if (contiguousTiles == null || contiguousTiles.Count == 0)
-            return "";
+        if (placedTiles == null || placedTiles.Count == 0)
+            return ("", 0);
 
         // Determine if the tiles are aligned horizontally (same y values) or vertically (same x values)
         bool isHorizontal = true;
         bool isVertical = true;
 
-        int firstX = contiguousTiles[0].Column;
-        int firstY = contiguousTiles[0].Row;
+        int firstX = placedTiles[0].Column;
+        int firstY = placedTiles[0].Row;
 
-        foreach (var tile in contiguousTiles)
+        foreach (var tile in placedTiles)
         {
             if (tile.Row != firstY)
                 isHorizontal = false;
@@ -50,48 +108,103 @@ public static class BoardDataHelper
         // If neither horizontal nor vertical, return empty (invalid state)
         if (!isHorizontal && !isVertical)
         {
-            // This shouldn't happen as we should only hit this function
-            // if the tiles are in a contiguous line horizontally or vertically
             Debug.LogError("Tiles are neither aligned horizontally nor vertically.");
-            return "";
+            return ("", 0);
         }
 
-        // Sort the tiles based on the orientation
+        // List to store all the connected tiles (placed + connected)
+        List<BoardSlotIndex> fullWordTiles = new List<BoardSlotIndex>();
+
+        // Get all connected tiles horizontally
         if (isHorizontal)
         {
-            // Sort left to right (by x-coordinate)
-            contiguousTiles.Sort((a, b) => a.Column.CompareTo(b.Column));
+            // Sort placed tiles left to right
+            placedTiles.Sort((a, b) => a.Column.CompareTo(b.Column));
+
+            // Expand left from the first placed tile
+            BoardSlotIndex currentTile = placedTiles[0];
+            fullWordTiles.AddRange(ExpandWord(boardState, currentTile, -1, 0)); // Left expansion
+
+            // Add the placed tiles
+            fullWordTiles.AddRange(placedTiles);
+
+            // Expand right from the last placed tile
+            currentTile = placedTiles[placedTiles.Count - 1];
+            fullWordTiles.AddRange(ExpandWord(boardState, currentTile, 1, 0)); // Right expansion
+        }
+        // Get all connected tiles vertically
+        else if (isVertical)
+        {
+            // Sort placed tiles top to bottom (highest row first)
+            placedTiles.Sort((a, b) => b.Row.CompareTo(a.Row));
+
+            // Expand upwards from the first placed tile
+            BoardSlotIndex currentTile = placedTiles[0];
+            fullWordTiles.AddRange(ExpandWord(boardState, currentTile, 0, -1)); // Up expansion
+
+            // Add the placed tiles
+            fullWordTiles.AddRange(placedTiles);
+
+            // Expand downwards from the last placed tile
+            currentTile = placedTiles[placedTiles.Count - 1];
+            fullWordTiles.AddRange(ExpandWord(boardState, currentTile, 0, 1)); // Down expansion
+        }
+
+        // Remove duplicate tiles
+        fullWordTiles = fullWordTiles.Distinct().ToList();
+
+        // Sort the full list of word tiles based on the direction
+        if (isHorizontal)
+        {
+            fullWordTiles.Sort((a, b) => a.Column.CompareTo(b.Column));
         }
         else if (isVertical)
         {
-            // Sort top to bottom (by y-coordinate) - highest y first, so reverse the order
-            contiguousTiles.Sort((a, b) => b.Row.CompareTo(a.Row));
+            fullWordTiles.Sort((a, b) => b.Row.CompareTo(a.Row));
         }
 
-        // Construct the word by iterating over the sorted tiles
+        // Construct the word and calculate the score by iterating over the sorted tiles
         string word = "";
-        foreach (var index in contiguousTiles)
+        int totalScore = 0;
+
+        foreach (var index in fullWordTiles)
         {
             var s = boardState.GetSlotState(index);
             word += s.OccupiedLetter.Character.ToString();
+            totalScore += s.OccupiedLetter.Score; // Sum the score of the letter
         }
 
-        return word;
+        return (word, totalScore); // Return both the word and the score
     }
 
-    public static int GetScoreFromTiles(IReadOnlyBoardState boardState, List<BoardSlotIndex> contiguousTiles)
+    // Helper function to expand word in a specific direction (dx, dy)
+    private static List<BoardSlotIndex> ExpandWord(IReadOnlyBoardState boardState, BoardSlotIndex startTile, int dx, int dy)
     {
-        // TODO: future update: check tile multipliers
-        int score = 0;
+        List<BoardSlotIndex> connectedTiles = new List<BoardSlotIndex>();
 
-        foreach (var index in contiguousTiles)
+        BoardSlotIndex nextTile = new BoardSlotIndex { Column = startTile.Column + dx, Row = startTile.Row + dy };
+
+        // Traverse in the specified direction until we hit an unoccupied tile or go out of bounds
+        while (nextTile.Column >= 0 && nextTile.Column < boardState.Dimensions.x &&
+               nextTile.Row >= 0 && nextTile.Row < boardState.Dimensions.y)
         {
-            var s = boardState.GetSlotState(index);
+            BoardSlotState slotState = boardState.GetSlotState(nextTile);
 
-            score += s.OccupiedLetter.Score;
+            // If the slot is occupied, add it to the connected tiles
+            if (slotState.IsOccupied)
+            {
+                connectedTiles.Add(nextTile);
+            }
+            else
+            {
+                break; // Stop when we hit an unoccupied tile
+            }
+
+            // Move to the next tile in the direction
+            nextTile = new BoardSlotIndex { Column = nextTile.Column + dx, Row = nextTile.Row + dy };
         }
 
-        return score;
+        return connectedTiles;
     }
 
     public static bool AreTilesContiguous(List<BoardSlotIndex> uncommittedTiles, IReadOnlyBoardState boardState, out List<BoardSlotIndex> contiguousTiles)

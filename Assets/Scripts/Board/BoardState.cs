@@ -21,12 +21,45 @@ public struct BoardSlotIndex
 {
     public int Column;
     public int Row;
+
+    public static bool operator ==(BoardSlotIndex lhs, BoardSlotIndex rhs)
+    {
+        return lhs.Column == rhs.Column && lhs.Row == rhs.Row;
+    }
+
+    public static bool operator !=(BoardSlotIndex lhs, BoardSlotIndex rhs)
+    {
+        return !(lhs == rhs);
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj is BoardSlotIndex)
+        {
+            var other = (BoardSlotIndex)obj;
+            return this == other;
+        }
+        return false;
+    }
+
+    // Override GetHashCode for proper dictionary or hash-based collection behavior
+    public override int GetHashCode()
+    {
+        unchecked
+        {
+            int hash = 17;
+            hash = hash * 31 + Column.GetHashCode();
+            hash = hash * 31 + Row.GetHashCode();
+            return hash;
+        }
+    }
 }
 
 public interface IReadOnlyBoardState
 {
     Vector2Int Dimensions { get; }
     BoardSlotState GetSlotState(BoardSlotIndex index);
+    int GetCommittedTileCount();
 }
 
 public class BoardState : IReadOnlyBoardState
@@ -55,6 +88,20 @@ public class BoardState : IReadOnlyBoardState
     public BoardSlotState GetSlotState(BoardSlotIndex index)
     {
         return _slots[index.Row][index.Column];
+    }
+
+    public int GetCommittedTileCount()
+    {
+        int count = 0;
+        foreach (var column in _slots)
+        {
+            foreach (var slot in column)
+            {
+                if (slot.IsTileCommitted) { count += 1; }
+            }
+        }
+
+        return count;
     }
 
     public void UpdateSlotState(BoardSlotIndex index, BoardSlotState slotState)

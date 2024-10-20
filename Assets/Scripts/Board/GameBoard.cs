@@ -38,8 +38,7 @@ public class GameBoard : MonoBehaviour
     {
         if (_draggedUILetterTile != null && evt.LetterTile != _draggedUILetterTile)
         {
-            var postEvt = SendTileToHolderEvent.Get(evt.LetterTile.PlayerIndex, evt.LetterTile);
-            GameEventHandler.Instance.TriggerEvent(postEvt);
+            GameEventHandler.Instance.TriggerEvent(ReturnTileToHolderEvent.Get(evt.LetterTile.PlayerIndex, evt.LetterTile.LetterInfo.UniqueId));
         }
 
         _draggedUILetterTile = evt.LetterTile;
@@ -60,8 +59,7 @@ public class GameBoard : MonoBehaviour
         else
         {
             UnityEngine. Debug.Log("Tile is NOT intersecting board");
-            var postEvt = SendTileToHolderEvent.Get(evt.LetterTile.PlayerIndex, evt.LetterTile);
-            GameEventHandler.Instance.TriggerEvent(postEvt);
+            GameEventHandler.Instance.TriggerEvent(ReturnTileToHolderEvent.Get(evt.LetterTile.PlayerIndex, evt.LetterTile.LetterInfo.UniqueId));
         }
 
         _draggedUILetterTile = null;
@@ -92,7 +90,8 @@ public class GameBoard : MonoBehaviour
 
         if (!_boardVisual.IsWorldPositionIntersectingBoard(worldPos))
         {
-            // TODO: need to send the tile back to the UI holder
+            GameEventHandler.Instance.TriggerEvent(ReturnTileToHolderEvent.Get(evt.LetterTile.PlayerIndex, evt.LetterTile.LetterData.UniqueId));
+            _boardVisual.DestroyLetterTile(evt.LetterTile.LetterData.UniqueId);
             return;
         }
 
@@ -155,5 +154,7 @@ public class GameBoard : MonoBehaviour
             _boardState.UpdateSlotState(index, slotState);
         }
 
+        var postEvt = TilesCommittedEvent.Get(tilesToCommit);
+        GameEventHandler.Instance.TriggerEvent(postEvt);
     }
 }

@@ -84,23 +84,23 @@ public class PlayerLetterAssignedEvent : GameEvent
     }
 }
 
-public class SendTileToHolderEvent : GameEvent
+public class ReturnTileToHolderEvent : GameEvent
 {
     public int PlayerIndex { get; private set; }
-    public UILetterTile Tile { get; private set; }
+    public uint LetterId { get; private set; }
 
-    public static SendTileToHolderEvent Get(int playerIndex, UILetterTile tile)
+    public static ReturnTileToHolderEvent Get(int playerIndex, uint LetterId)
     {
-        var evt = Get<SendTileToHolderEvent>();
+        var evt = Get<ReturnTileToHolderEvent>();
         evt.PlayerIndex = playerIndex;
-        evt.Tile = tile;
+        evt.LetterId = LetterId;
         return evt;
     }
 
     public override void Reset()
     {
         PlayerIndex = -1;
-        Tile = null;
+        LetterId = 0;
     }
 }
 
@@ -185,5 +185,41 @@ public class WorldTileEndDragEvent : GameEvent
     public override void Reset()
     {
         LetterTile = null;
+    }
+}
+
+public class TilesCommittedEvent : GameEvent
+{
+    public List<BoardSlotIndex> CommittedTiles { get; private set; }
+
+    public static TilesCommittedEvent Get(List<BoardSlotIndex> committedTiles)
+    {
+        var evt = Get<TilesCommittedEvent>();
+        evt.CommittedTiles = committedTiles;
+        return evt;
+    }
+
+    public override void Reset()
+    {
+        CommittedTiles = null;
+    }
+}
+
+public class ConfirmSwitchPlayerEvent : GameEvent
+{
+    public int EndPlayerIndex { get; private set; }
+    public int NextPlayerIndex { get; private set; }
+
+    public static ConfirmSwitchPlayerEvent Get(int endPlayerIndex, int nextPlayerIndex)
+    {
+        var evt = Get<ConfirmSwitchPlayerEvent>();
+        evt.EndPlayerIndex = endPlayerIndex;
+        evt.NextPlayerIndex = nextPlayerIndex;
+        return evt;
+    }
+
+    public override void Reset()
+    {
+        EndPlayerIndex = -1;
     }
 }

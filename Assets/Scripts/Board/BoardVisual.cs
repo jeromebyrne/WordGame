@@ -7,11 +7,12 @@ public class BoardVisual : MonoBehaviour
 
     [SerializeField] private GameObject _letterTilePrefab;
 
-    private List<SpriteRenderer> _letterTilesSprites = new List<SpriteRenderer>(); 
+    // the int is the letter id
+    private Dictionary<uint, SpriteRenderer> _letterTilesSpritesMap = new Dictionary<uint, SpriteRenderer>(); 
 
     private Vector2Int _cachedGridDimensions;
 
-    public List<SpriteRenderer> GetTilesSpriteRenderers() { return _letterTilesSprites; }
+    public Dictionary<uint, SpriteRenderer> GetTilesSpriteRenderers() { return _letterTilesSpritesMap; }
 
     public Vector3 GetWorldPositionForGridIndex(BoardSlotIndex gridIndex)
     {
@@ -65,33 +66,14 @@ public class BoardVisual : MonoBehaviour
         _boardSprite.size = dimensions;
     }
 
-    /*
-    private void AddLetterTiles(Vector2Int dimensions)
-    {
-        // add a tile for every slot, we can turn them on and off
-        // assumes SetGridDimensions has been called
-        float boardHalfWidth = _boardSprite.bounds.size.x * 0.5f;
-        float boardHalfHeight = _boardSprite.bounds.size.x * 0.5f;
-
-        for (int i = 0; i < dimensions.x; i++)
+    public void DestroyLetterTile(uint letterId)
+    { 
+        if (_letterTilesSpritesMap.ContainsKey(letterId))
         {
-            _letterTiles.Add(new List<WorldLetterTileVisual>());
-
-            for (int j = 0; j < dimensions.y; ++j)
-            {
-                var tile = CreateLetterTile(new Vector3((j * SlotWidth) - boardHalfWidth + SlotWidth * 0.5f,
-                                            (i * SlotHeight) - boardHalfHeight + SlotHeight * 0.5f,
-                                            -1.0f),
-                                            j,
-                                            i);
-
-                _letterTiles[i].Add(tile);
-
-                _letterTilesSprites.Add(tile.GetComponent<SpriteRenderer>());
-            }
+            Destroy(_letterTilesSpritesMap[letterId].gameObject);
+            _letterTilesSpritesMap.Remove(letterId);
         }
     }
-    */
 
     public WorldLetterTileVisual CreateLetterTile(LetterDataObj letterData, int playerIndex)
     {
@@ -101,7 +83,7 @@ public class BoardVisual : MonoBehaviour
 
         tileComponent.Populate(letterData, playerIndex);
 
-        _letterTilesSprites.Add(newInstance.GetComponent<SpriteRenderer>());
+        _letterTilesSpritesMap.Add(letterData.UniqueId, newInstance.GetComponent<SpriteRenderer>());
 
         return tileComponent;
     }

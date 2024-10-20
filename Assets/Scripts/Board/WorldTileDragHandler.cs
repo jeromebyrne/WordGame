@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class WorldTileDragHandler : MonoBehaviour
@@ -10,6 +11,16 @@ public class WorldTileDragHandler : MonoBehaviour
     public void Init()
     {
         _camera = Camera.main;
+    }
+
+    private void OnEnable()
+    {
+        GameEventHandler.Instance.Subscribe<ReturnTileToHolderEvent>(OnTileReturnedToHolder);
+    }
+
+    private void OnDisable()
+    {
+        GameEventHandler.Instance.Unsubscribe<ReturnTileToHolderEvent>(OnTileReturnedToHolder);
     }
 
     void Update()
@@ -60,25 +71,28 @@ public class WorldTileDragHandler : MonoBehaviour
         // Find all tiles in the scene (could also optimize with tags or other methods)
         var tileRenderers = _boardVisual.GetTilesSpriteRenderers();
 
-        foreach (var tr in tileRenderers)
+        foreach (var kvp in tileRenderers)
         {
-            if (!tr.gameObject.activeInHierarchy)
+            SpriteRenderer sr = kvp.Value;
+            if (!sr.gameObject.activeInHierarchy)
             {
                 continue;
             }
 
-            if (IsPointWithinSpriteBounds(tr, worldPos))
+            // we want to make sure this is not a committed tile. Committed tiles should not be moveable
+            var visualComponent = sr.gameObject.GetComponent<WorldLetterTileVisual>();
+            if (visualComponent == null || visualComponent.IsLocked)
             {
-                _selectedTile = tr.gameObject;
+                continue;
+            }
+
+            if (IsPointWithinSpriteBounds(sr, worldPos))
+            {
+                _selectedTile = sr.gameObject;
                 _isDragging = true;
 
-                var visualComponent = _selectedTile.GetComponent<WorldLetterTileVisual>();
-
-                if (visualComponent)
-                {
-                    var postEvt = WorldTileStartDragEvent.Get(visualComponent);
-                    GameEventHandler.Instance.TriggerEvent(postEvt);
-                }
+                var postEvt = WorldTileStartDragEvent.Get(visualComponent);
+                GameEventHandler.Instance.TriggerEvent(postEvt);
 
                 break;
             }
@@ -102,5 +116,20 @@ public class WorldTileDragHandler : MonoBehaviour
         Vector3 worldPos = _camera.ScreenToWorldPoint(mousePos);
         worldPos.z = _selectedTile.transform.position.z; // Keep the Z position constant
         _selectedTile.transform.position = worldPos;
+    }
+
+    void OnTileReturnedToHolder(ReturnTileToHolderEvent evt)
+    {
+        if (_selectedTile)
+        {
+            WorldLetterTileVisual tileVisual = _selectedTile.gameObject.GetComponent<WorldLetterTileVisual>();
+
+            if (tileVisual.LetterData.UniqueId == evt.LetterId)
+            {
+                // this tile will be destroyed
+                _selectedTile = null;
+                _isDragging = false;
+            }
+        }
     }
 }

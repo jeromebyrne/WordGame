@@ -47,7 +47,7 @@ public class WorldLetterTileVisual : MonoBehaviour
             return;
         }
 
-        foreach (var index in evt.CommittedTiles)
+        foreach (var index in evt.CommittedTileIndices)
         {
             if (index == GridIndex)
             {

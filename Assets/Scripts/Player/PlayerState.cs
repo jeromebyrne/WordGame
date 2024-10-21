@@ -13,6 +13,8 @@ public class PlayerState
 
     List<LetterDataObj> _currentPlayerLetters = new List<LetterDataObj>();
 
+    public int CurrentLetterCount { get { return _currentPlayerLetters.Count; } }
+
     public void AssignLetter(LetterDataObj letter)
     {
         _currentPlayerLetters.Add(letter);
@@ -29,7 +31,7 @@ public class PlayerState
         int count = 0;
         foreach (var l in _currentPlayerLetters)
         {
-            if (l.Character == letterInfo.Character)
+            if (l.UniqueId == letterInfo.UniqueId)
             {
                 index = count;
                 break;

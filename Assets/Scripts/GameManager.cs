@@ -12,7 +12,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private WorldTileDragHandler _worldTileDragHandler;
     [SerializeField] private BoardVisual _boardVisual;
 
-    private int _currentPlayerIndex = 1;
+    private PlayerState _currentPlayerState;
 
     private void OnEnable()
     {
@@ -38,7 +38,7 @@ public class GameManager : MonoBehaviour
 
         _worldTileDragHandler.Init();
 
-        _currentPlayerIndex = 1;
+        _currentPlayerState = _playerOneState;
         GameEventHandler.Instance.TriggerEvent(ConfirmSwitchPlayerEvent.Get(-1, 1));
     }
 
@@ -50,22 +50,36 @@ public class GameManager : MonoBehaviour
         {
             if (i % 2 == 0)
             {
-                // player 1
-                LetterDataObj randomLetter = _letterBag.PickRandomLetter();
-                _playerOneState.AssignLetter(randomLetter);
-
-                var evt = PlayerLetterAssignedEvent.Get(_playerOneState, randomLetter);
-                GameEventHandler.Instance.TriggerEvent(evt);
+                AssignRandomLetterToPlayer(_playerOneState);
             }
             else
             {
-                // player 2
-                LetterDataObj randomLetter = _letterBag.PickRandomLetter();
-                _playerTwoState.AssignLetter(randomLetter);
-
-                var evt = PlayerLetterAssignedEvent.Get(_playerTwoState, randomLetter);
-                GameEventHandler.Instance.TriggerEvent(evt);
+                AssignRandomLetterToPlayer(_playerTwoState);
             }
+        }
+    }
+
+    void AssignRandomLetterToPlayer(PlayerState playerState)
+    {
+        LetterDataObj randomLetter = _letterBag.PickRandomLetter();
+        playerState.AssignLetter(randomLetter);
+
+        var evt = PlayerLetterAssignedEvent.Get(playerState, randomLetter);
+        GameEventHandler.Instance.TriggerEvent(evt);
+    }
+
+    void AssignFreshLettersToPlayer(PlayerState playerState)
+    {
+        if (!_letterBag.HasLetterToPick())
+        {
+            Debug.Log("The letter bag is exhausted");
+            return;
+        }
+
+        int numLettersPerPlayer = GameSettingsConfigManager.GameSettings._maxPlayerLetters;
+        for (int i = playerState.CurrentLetterCount; i < numLettersPerPlayer; i++)
+        {
+            AssignRandomLetterToPlayer(playerState);
         }
     }
 
@@ -111,11 +125,27 @@ public class GameManager : MonoBehaviour
 
         Debug.Log("Score for " + wordAndScoreTuple.word + " is: " + wordAndScoreTuple.score.ToString());
 
-        _gameBoard.CommitTiles(uncommittedTiles);
+        List<LetterDataObj> lettersToCommit = new List<LetterDataObj>(); // we use these to remove form the player state below
 
-        int nextPlayerIndex = _currentPlayerIndex == 1 ? 2 : 1;
-        GameEventHandler.Instance.TriggerEvent(ConfirmSwitchPlayerEvent.Get(_currentPlayerIndex, nextPlayerIndex));
+        foreach (BoardSlotIndex i in uncommittedTiles)
+        {
+            BoardSlotState slotState = boardState.GetSlotState(i);
+            lettersToCommit.Add(slotState.OccupiedLetter);
+        }
 
-        _currentPlayerIndex = nextPlayerIndex;
+        _gameBoard.CommitTiles(uncommittedTiles, _currentPlayerState.PlayerIndex);
+
+        // remove the letters from the players state
+        foreach (LetterDataObj l in lettersToCommit)
+        {
+            _currentPlayerState.RemoveLetter(l);
+        }
+
+        PlayerState nextPlayerState = _currentPlayerState.PlayerIndex == 1 ? _playerTwoState : _playerOneState;
+        GameEventHandler.Instance.TriggerEvent(ConfirmSwitchPlayerEvent.Get(_currentPlayerState.PlayerIndex, nextPlayerState.PlayerIndex));
+
+        AssignFreshLettersToPlayer(nextPlayerState);
+
+        _currentPlayerState = nextPlayerState;
     }
 }

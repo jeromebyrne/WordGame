@@ -190,18 +190,24 @@ public class WorldTileEndDragEvent : GameEvent
 
 public class TilesCommittedEvent : GameEvent
 {
-    public List<BoardSlotIndex> CommittedTiles { get; private set; }
+    public List<BoardSlotIndex> CommittedTileIndices { get; private set; }
+    public List<uint> CommittedTileLetterIds { get; private set; }
+    public int PlayerIndex { get; private set; }
 
-    public static TilesCommittedEvent Get(List<BoardSlotIndex> committedTiles)
+    public static TilesCommittedEvent Get(int playerIndex, List<BoardSlotIndex> committedTileIndices, List<uint> committedTileLetterIds)
     {
         var evt = Get<TilesCommittedEvent>();
-        evt.CommittedTiles = committedTiles;
+        evt.CommittedTileIndices = committedTileIndices;
+        evt.CommittedTileLetterIds = committedTileLetterIds;
+        evt.PlayerIndex = playerIndex;
         return evt;
     }
 
     public override void Reset()
     {
-        CommittedTiles = null;
+        CommittedTileIndices = null;
+        CommittedTileLetterIds = null;
+        PlayerIndex = -1;
     }
 }
 

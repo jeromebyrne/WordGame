@@ -145,16 +145,18 @@ public class GameBoard : MonoBehaviour
         GameEventHandler.Instance.TriggerEvent(postEvt);
     }
 
-    public void CommitTiles(List<BoardSlotIndex> tilesToCommit)
+    public void CommitTiles(List<BoardSlotIndex> tilesToCommit, int playerIndex)
     {
+        List<uint> letterIds = new List<uint>();
+
         foreach (var index in tilesToCommit)
         {
             var slotState = _boardState.GetSlotState(index);
             slotState.IsTileCommitted = true;
+            letterIds.Add(slotState.OccupiedLetter.UniqueId);
             _boardState.UpdateSlotState(index, slotState);
         }
 
-        var postEvt = TilesCommittedEvent.Get(tilesToCommit);
-        GameEventHandler.Instance.TriggerEvent(postEvt);
+        GameEventHandler.Instance.TriggerEvent(TilesCommittedEvent.Get(playerIndex, tilesToCommit, letterIds));
     }
 }

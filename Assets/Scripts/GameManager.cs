@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SocialPlatforms.Impl;
 
 public class GameManager : MonoBehaviour
 {
@@ -123,8 +122,6 @@ public class GameManager : MonoBehaviour
 
         Debug.Log(wordAndScoreTuple.word + " is a valid word!");
 
-        Debug.Log("Score for " + wordAndScoreTuple.word + " is: " + wordAndScoreTuple.score.ToString());
-
         List<LetterDataObj> lettersToCommit = new List<LetterDataObj>(); // we use these to remove form the player state below
 
         foreach (BoardSlotIndex i in uncommittedTiles)
@@ -134,6 +131,10 @@ public class GameManager : MonoBehaviour
         }
 
         _gameBoard.CommitTiles(uncommittedTiles, _currentPlayerState.PlayerIndex);
+
+        Debug.Log("Score for " + wordAndScoreTuple.word + " is: " + wordAndScoreTuple.score.ToString());
+
+        _currentPlayerState.AddScore(wordAndScoreTuple.score);
 
         // remove the letters from the players state
         foreach (LetterDataObj l in lettersToCommit)

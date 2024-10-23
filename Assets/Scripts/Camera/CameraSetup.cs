@@ -19,9 +19,7 @@ public class CameraSetup : MonoBehaviour
         // Calculate the orthographic size to ensure it always fits the height
         float scaleHeight = windowAspect / targetAspect;
 
-        float scaleOverride = 0.0105f;
-
-        // TODO: I should actually take the board grid dimensions into consideration
+        float scaleOverride = 0.00095f * GameSettingsConfigManager.GameSettings._boardDimensions.x;
 
         if (scaleHeight >= 1.0f)
         {

@@ -229,3 +229,20 @@ public class ConfirmSwitchPlayerEvent : GameEvent
         EndPlayerIndex = -1;
     }
 }
+
+public class PlayerStateUpdatedEvent : GameEvent
+{
+    public PlayerState PlayerState { get; private set; }
+
+    public static PlayerStateUpdatedEvent Get(PlayerState playerState)
+    {
+        var evt = Get<PlayerStateUpdatedEvent>();
+        evt.PlayerState = playerState;
+        return evt;
+    }
+
+    public override void Reset()
+    {
+        PlayerState = null;
+    }
+}

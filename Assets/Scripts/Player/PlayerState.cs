@@ -11,6 +11,8 @@ public class PlayerState
 
     public int PlayerIndex { get; private set; }
 
+    public int Score { get; private set; }
+
     List<LetterDataObj> _currentPlayerLetters = new List<LetterDataObj>();
 
     public int CurrentLetterCount { get { return _currentPlayerLetters.Count; } }
@@ -43,5 +45,12 @@ public class PlayerState
         {
             _currentPlayerLetters.RemoveAt(index);
         }
+    }
+
+    public void AddScore(int score)
+    {
+        Score += score;
+
+        GameEventHandler.Instance.TriggerEvent(PlayerStateUpdatedEvent.Get(this));
     }
 }

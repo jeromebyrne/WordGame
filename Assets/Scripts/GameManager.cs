@@ -122,7 +122,6 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        
         var wordAndScoreTuple = BoardDataHelper.GetWordAndScoreFromTiles(boardState, contiguousTiles);
 
         if (!WordConfigManager.IsValidWord(wordAndScoreTuple.word))

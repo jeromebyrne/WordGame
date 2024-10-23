@@ -116,6 +116,15 @@ public class BoardState : IReadOnlyBoardState
             return TileBonusType.kCenterTile;
         }
 
+        if (column == (maxColumn / 2) - 1 ||
+            column == (maxColumn / 2) + 1 ||
+            row == (maxRow / 2) - 1 ||
+            row == (maxRow / 2) + 1)
+        {
+            // exlude tiles around the center
+            return TileBonusType.kNone;
+        }
+
         // Triple Word Score: Corner and mid-column/row positions
         if ((row == 0 && column == 0) || (row == 0 && column == maxColumn) ||
             (row == maxRow && column == 0) || (row == maxRow && column == maxColumn) ||
@@ -125,10 +134,10 @@ public class BoardState : IReadOnlyBoardState
             return TileBonusType.kTripleWord;
         }
 
-        // Double Word Score: Along the diagonals
+        // Double Letter Score: Along the diagonals
         if (row == column || row + column == maxRow)
         {
-            return TileBonusType.kDoubleWord;
+            return TileBonusType.kDoubleLetter;
         }
 
         // Triple Letter Score: Spread near the edges
@@ -138,13 +147,13 @@ public class BoardState : IReadOnlyBoardState
             return TileBonusType.kTripleLetter;
         }
 
-        // Double Letter Score: Spread near the center
+        // Double Word Score: Spread near the center
         if ((row == 2 && (column == maxColumn / 3 || column == maxColumn - maxColumn / 3)) ||
             (row == maxRow - 2 && (column == maxColumn / 3 || column == maxColumn - maxColumn / 3)) ||
             (row == maxRow / 3 && (column == 2 || column == maxColumn - 2)) ||
             (row == maxRow - maxRow / 3 && (column == 2 || column == maxColumn - 2)))
         {
-            return TileBonusType.kDoubleLetter;
+            return TileBonusType.kDoubleWord;
         }
 
         return TileBonusType.kNone;

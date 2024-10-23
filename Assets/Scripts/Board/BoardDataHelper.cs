@@ -163,18 +163,50 @@ public static class BoardDataHelper
             fullWordTiles.Sort((a, b) => b.Row.CompareTo(a.Row));
         }
 
-        // Construct the word and calculate the score by iterating over the sorted tiles
+        // Variables to keep track of the word and its total score
         string word = "";
         int totalScore = 0;
+        int wordMultiplier = 1; // Multiplier for the word score (e.g., triple word score)
 
+        // Iterate over the sorted tiles to construct the word and calculate the score
         foreach (var index in fullWordTiles)
         {
-            var s = boardState.GetSlotState(index);
-            word += s.OccupiedLetter.Character.ToString();
-            totalScore += s.OccupiedLetter.Score; // Sum the score of the letter
+            var slotState = boardState.GetSlotState(index);
+            var letter = slotState.OccupiedLetter;
+
+            if (letter == null)
+                continue;
+
+            word += letter.Character.ToString();
+            int tileScore = letter.Score; // Base score of the letter
+
+            // Check if this slot has a bonus, and apply the corresponding bonus
+            if (!slotState.IsTileCommitted)
+            {
+                switch (slotState.BonusType)
+                {
+                    case TileBonusType.kDoubleLetter:
+                        tileScore *= 2;
+                        break;
+                    case TileBonusType.kTripleLetter:
+                        tileScore *= 3;
+                        break;
+                    case TileBonusType.kDoubleWord:
+                        wordMultiplier *= 2;
+                        break;
+                    case TileBonusType.kTripleWord:
+                        wordMultiplier *= 3;
+                        break;
+                }
+            }
+
+            totalScore += tileScore; // Add the tile's score to the total
         }
 
-        return (word, totalScore); // Return both the word and the score
+        // Apply the word multiplier (e.g., double or triple word score)
+        totalScore *= wordMultiplier;
+
+        return (word, totalScore); // Return both the word and the total score
     }
 
     // Helper function to expand word in a specific direction (dx, dy)

@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 
 public class BoardVisual : MonoBehaviour
 {
@@ -17,7 +16,6 @@ public class BoardVisual : MonoBehaviour
 
     public Vector3 GetWorldPositionForGridIndex(BoardSlotIndex gridIndex)
     {
-        // Get the board's bounds
         Bounds boardBounds = _boardSprite.bounds;
 
         // Calculate half the board's width and height
@@ -25,10 +23,9 @@ public class BoardVisual : MonoBehaviour
         float boardHalfHeight = boardBounds.size.y * 0.5f;
 
         // Calculate the world position based on grid index and slot dimensions
-        float worldX = (gridIndex.Column * SlotWidth) - boardHalfWidth + SlotWidth * 0.5f /*+ boardBounds.min.x*/;
-        float worldY = (gridIndex.Row * SlotHeight) - boardHalfHeight + SlotHeight * 0.5f /*+ boardBounds.min.y*/;
+        float worldX = (gridIndex.Column * SlotWidth) - boardHalfWidth + SlotWidth * 0.5f;
+        float worldY = (gridIndex.Row * SlotHeight) - boardHalfHeight + SlotHeight * 0.5f;
 
-        // Return the calculated world position
         return new Vector3(worldX, worldY, -2.0f); // TODO: cache these positions
     }
 
@@ -91,6 +88,8 @@ public class BoardVisual : MonoBehaviour
 
     public bool IsWorldPositionIntersectingBoard(Vector3 worldPosition)
     {
+        worldPosition.z = _boardSprite.transform.position.z;
+
         Bounds spriteBounds = _boardSprite.bounds;
 
         return spriteBounds.Contains(worldPosition);
@@ -137,6 +136,7 @@ public class BoardVisual : MonoBehaviour
     private void CreateBonusTile(BoardSlotState slotState)
     {
         Vector3 snappedPosition = GetWorldPositionForGridIndex(slotState.BoardIndex);
+        snappedPosition.z = gameObject.transform.position.z - 1;
 
         GameObject newInstance = Instantiate(_bonusTilePrefab, snappedPosition, Quaternion.identity, _boardSprite.gameObject.transform);
 

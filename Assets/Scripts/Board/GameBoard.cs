@@ -119,6 +119,7 @@ public class GameBoard : MonoBehaviour
         worldTile.SetGridIndex(nearestUnoccupiedIndex);
 
         Vector3 snappedPosition = _boardVisual.GetWorldPositionForGridIndex(nearestUnoccupiedIndex);
+        snappedPosition.z = _boardVisual.transform.position.z - 2.0f; // TODO: this is hacky
 
         worldTile.transform.position = snappedPosition;
 

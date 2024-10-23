@@ -102,8 +102,18 @@ public class GameManager : MonoBehaviour
         // if there are 0 committed tiles it means it's the first turn
         bool firstTurn = boardState.GetCommittedTileCount() == 0;
 
-        if (!firstTurn)
+        if (firstTurn)
         {
+            // the player needs to occupy the center slot on the first turn
+            if (!boardState.IsCenterTileOccupied())
+            {
+                Debug.Log("The center tile must be occupied on the first turn");
+                return;
+            }
+        }
+        else
+        {
+            // make sure newly placed tiles touch previously placed tiles
             bool connecting = BoardDataHelper.ArePlacedTilesConnectingWithCommittedTile(boardState, uncommittedTiles);
             if (!connecting)
             {
@@ -111,6 +121,7 @@ public class GameManager : MonoBehaviour
                 return;
             }
         }
+
         
         var wordAndScoreTuple = BoardDataHelper.GetWordAndScoreFromTiles(boardState, contiguousTiles);
 

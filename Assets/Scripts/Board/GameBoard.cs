@@ -32,6 +32,7 @@ public class GameBoard : MonoBehaviour
     public void Init()
     {
         _boardState = new BoardState(GameSettingsConfigManager.GameSettings._boardDimensions);
+        _boardVisual.CreateBonusTileVisuals(_boardState);
     }
 
     private void OnUITileStartDrag(UILetterTileStartDragEvent evt)

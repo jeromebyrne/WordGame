@@ -1,20 +1,23 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public struct BoardSlotState
 {
-    public BoardSlotState(bool occupied, Vector2Int boardIndex, bool isTileCommitted)
+    public BoardSlotState(bool occupied, BoardSlotIndex boardIndex, bool isTileCommitted, TileBonusType bonusType)
     {
         IsOccupied = occupied;
         IsTileCommitted = isTileCommitted;
         OccupiedLetter = null;
         BoardIndex = boardIndex;
+        BonusType = bonusType;
     }
 
     public bool IsOccupied { get; set; }
     public bool IsTileCommitted { get; set; }
     public LetterDataObj OccupiedLetter { get; set; }
-    public Vector2Int BoardIndex { get; private set; }
+    public BoardSlotIndex BoardIndex { get; private set; }
+    public TileBonusType BonusType { get; private set; }
 }
 
 public struct BoardSlotIndex
@@ -55,11 +58,23 @@ public struct BoardSlotIndex
     }
 }
 
+public enum TileBonusType
+{
+    kNone,
+    kDoubleWord,
+    kTripleWord,
+    kDoubleLetter,
+    kTripleLetter,
+    kCenterTile
+}
+
 public interface IReadOnlyBoardState
 {
     Vector2Int Dimensions { get; }
     BoardSlotState GetSlotState(BoardSlotIndex index);
     int GetCommittedTileCount();
+    bool IsCenterTileOccupied(); // on the first turn, the center tile should be occupied
+    List<BoardSlotState> GetAllSlotStatesFlattened();
 }
 
 public class BoardState : IReadOnlyBoardState
@@ -79,10 +94,60 @@ public class BoardState : IReadOnlyBoardState
             _slots.Add(new List<BoardSlotState>());
             for (int row = 0; row < dimensions.y; row++)
             {
-                BoardSlotState slotState = new BoardSlotState(false, new Vector2Int(row, column), false);
+                BoardSlotState slotState = new BoardSlotState(false, new BoardSlotIndex { Row = row, Column = column }, false, GetTileBonusForIndex(row, column));
                 _slots[column].Add(slotState);
             }
         }
+    }
+
+    public List<BoardSlotState> GetAllSlotStatesFlattened()
+    {
+        List<BoardSlotState> flatList = _slots.SelectMany(subList => subList).ToList();
+        return flatList;
+    }
+
+    private TileBonusType GetTileBonusForIndex(int row, int column)
+    {
+        int maxRow = Dimensions.y - 1;
+        int maxColumn = Dimensions.x - 1;
+
+        if (row == maxRow / 2 && column == maxColumn / 2)
+        {
+            return TileBonusType.kCenterTile;
+        }
+
+        // Triple Word Score: Corner and mid-column/row positions
+        if ((row == 0 && column == 0) || (row == 0 && column == maxColumn) ||
+            (row == maxRow && column == 0) || (row == maxRow && column == maxColumn) ||
+            (row == maxRow / 2 && column == 0) || (row == maxRow / 2 && column == maxColumn) ||
+            (row == 0 && column == maxColumn / 2) || (row == maxRow && column == maxColumn / 2))
+        {
+            return TileBonusType.kTripleWord;
+        }
+
+        // Double Word Score: Along the diagonals
+        if (row == column || row + column == maxRow)
+        {
+            return TileBonusType.kDoubleWord;
+        }
+
+        // Triple Letter Score: Spread near the edges
+        if ((row == 2 && column == maxColumn / 2) || (row == maxRow - 2 && column == maxColumn / 2) ||
+            (row == maxRow / 2 && column == 2) || (row == maxRow / 2 && column == maxColumn - 2))
+        {
+            return TileBonusType.kTripleLetter;
+        }
+
+        // Double Letter Score: Spread near the center
+        if ((row == 2 && (column == maxColumn / 3 || column == maxColumn - maxColumn / 3)) ||
+            (row == maxRow - 2 && (column == maxColumn / 3 || column == maxColumn - maxColumn / 3)) ||
+            (row == maxRow / 3 && (column == 2 || column == maxColumn - 2)) ||
+            (row == maxRow - maxRow / 3 && (column == 2 || column == maxColumn - 2)))
+        {
+            return TileBonusType.kDoubleLetter;
+        }
+
+        return TileBonusType.kNone;
     }
 
     public BoardSlotState GetSlotState(BoardSlotIndex index)
@@ -119,5 +184,13 @@ public class BoardState : IReadOnlyBoardState
         }
 
         _slots[index.Row][index.Column] = slotState;
+    }
+
+    public bool IsCenterTileOccupied()
+    {
+        int x = _slots.Count / 2;
+        int y = _slots[0].Count / 2;
+
+        return _slots[x][y].IsOccupied;
     }
 }

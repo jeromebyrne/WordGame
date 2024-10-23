@@ -1009,6 +1009,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _boardSprite: {fileID: 1483288909}
   _letterTilePrefab: {fileID: 4269859778366262739, guid: 003b081e0aa6d45d09c2fb7f501f2391, type: 3}
+  _bonusTilePrefab: {fileID: 4269859778366262739, guid: 738ac54bb2623426dacdce99678c8869, type: 3}
 --- !u!1 &1845463002
 GameObject:
   m_ObjectHideFlags: 0

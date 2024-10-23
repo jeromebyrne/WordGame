@@ -1,11 +1,12 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 
 public class BoardVisual : MonoBehaviour
 {
     [SerializeField] private SpriteRenderer _boardSprite;
-
     [SerializeField] private GameObject _letterTilePrefab;
+    [SerializeField] private GameObject _bonusTilePrefab;
 
     // the int is the letter id
     private Dictionary<uint, SpriteRenderer> _letterTilesSpritesMap = new Dictionary<uint, SpriteRenderer>(); 
@@ -116,5 +117,31 @@ public class BoardVisual : MonoBehaviour
         index.Row = row;
         index.Column = column;
         return index;
+    }
+
+    public void CreateBonusTileVisuals(IReadOnlyBoardState boardState)
+    {
+        var slotStates = boardState.GetAllSlotStatesFlattened();
+
+        foreach (var slotState in slotStates)
+        {
+            if (slotState.BonusType == TileBonusType.kNone)
+            {
+                continue;
+            }
+
+            CreateBonusTile(slotState);
+        }
+    }
+
+    private void CreateBonusTile(BoardSlotState slotState)
+    {
+        Vector3 snappedPosition = GetWorldPositionForGridIndex(slotState.BoardIndex);
+
+        GameObject newInstance = Instantiate(_bonusTilePrefab, snappedPosition, Quaternion.identity, _boardSprite.gameObject.transform);
+
+        WorldBonusTile bonusTileComponent = newInstance.GetComponent<WorldBonusTile>();
+
+        bonusTileComponent.Populate(slotState.BonusType);
     }
 }

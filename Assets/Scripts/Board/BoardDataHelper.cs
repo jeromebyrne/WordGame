@@ -85,129 +85,90 @@ public static class BoardDataHelper
     }
 
     public static (string word, int score) GetWordAndScoreFromTiles(IReadOnlyBoardState boardState, List<BoardSlotIndex> placedTiles)
+{
+    // Ensure there are tiles to process
+    if (placedTiles == null || placedTiles.Count == 0)
+        return ("", 0);
+
+    // List to store all the connected tiles (placed + committed)
+    List<BoardSlotIndex> fullWordTiles = new List<BoardSlotIndex>();
+
+    // Expand in both horizontal and vertical directions for each placed tile
+    foreach (var tile in placedTiles)
     {
-        // Ensure there are tiles to process
-        if (placedTiles == null || placedTiles.Count == 0)
-            return ("", 0);
+        // Expand horizontally for each placed tile
+        fullWordTiles.AddRange(ExpandWord(boardState, tile, -1, 0)); // Left expansion
+        fullWordTiles.AddRange(ExpandWord(boardState, tile, 1, 0));  // Right expansion
 
-        // Determine if the tiles are aligned horizontally (same y values) or vertically (same x values)
-        bool isHorizontal = true;
-        bool isVertical = true;
-
-        int firstX = placedTiles[0].Column;
-        int firstY = placedTiles[0].Row;
-
-        foreach (var tile in placedTiles)
-        {
-            if (tile.Row != firstY)
-                isHorizontal = false;
-            if (tile.Column != firstX)
-                isVertical = false;
-        }
-
-        // If neither horizontal nor vertical, return empty (invalid state)
-        if (!isHorizontal && !isVertical)
-        {
-            Debug.LogError("Tiles are neither aligned horizontally nor vertically.");
-            return ("", 0);
-        }
-
-        // List to store all the connected tiles (placed + connected)
-        List<BoardSlotIndex> fullWordTiles = new List<BoardSlotIndex>();
-
-        // Get all connected tiles horizontally
-        if (isHorizontal)
-        {
-            // Sort placed tiles left to right
-            placedTiles.Sort((a, b) => a.Column.CompareTo(b.Column));
-
-            // Expand left from the first placed tile
-            BoardSlotIndex currentTile = placedTiles[0];
-            fullWordTiles.AddRange(ExpandWord(boardState, currentTile, -1, 0)); // Left expansion
-
-            // Add the placed tiles
-            fullWordTiles.AddRange(placedTiles);
-
-            // Expand right from the last placed tile
-            currentTile = placedTiles[placedTiles.Count - 1];
-            fullWordTiles.AddRange(ExpandWord(boardState, currentTile, 1, 0)); // Right expansion
-        }
-        // Get all connected tiles vertically
-        else if (isVertical)
-        {
-            // Sort placed tiles top to bottom (highest row first)
-            placedTiles.Sort((a, b) => b.Row.CompareTo(a.Row));
-
-            // Expand upwards from the first placed tile
-            BoardSlotIndex currentTile = placedTiles[0];
-            fullWordTiles.AddRange(ExpandWord(boardState, currentTile, 0, -1)); // Up expansion
-
-            // Add the placed tiles
-            fullWordTiles.AddRange(placedTiles);
-
-            // Expand downwards from the last placed tile
-            currentTile = placedTiles[placedTiles.Count - 1];
-            fullWordTiles.AddRange(ExpandWord(boardState, currentTile, 0, 1)); // Down expansion
-        }
-
-        // Remove duplicate tiles
-        fullWordTiles = fullWordTiles.Distinct().ToList();
-
-        // Sort the full list of word tiles based on the direction
-        if (isHorizontal)
-        {
-            fullWordTiles.Sort((a, b) => a.Column.CompareTo(b.Column));
-        }
-        else if (isVertical)
-        {
-            fullWordTiles.Sort((a, b) => b.Row.CompareTo(a.Row));
-        }
-
-        // Variables to keep track of the word and its total score
-        string word = "";
-        int totalScore = 0;
-        int wordMultiplier = 1; // Multiplier for the word score (e.g., triple word score)
-
-        // Iterate over the sorted tiles to construct the word and calculate the score
-        foreach (var index in fullWordTiles)
-        {
-            var slotState = boardState.GetSlotState(index);
-            var letter = slotState.OccupiedLetter;
-
-            if (letter == null)
-                continue;
-
-            word += letter.Character.ToString();
-            int tileScore = letter.Score; // Base score of the letter
-
-            // Check if this slot has a bonus, and apply the corresponding bonus
-            if (!slotState.IsTileCommitted)
-            {
-                switch (slotState.BonusType)
-                {
-                    case TileBonusType.kDoubleLetter:
-                        tileScore *= 2;
-                        break;
-                    case TileBonusType.kTripleLetter:
-                        tileScore *= 3;
-                        break;
-                    case TileBonusType.kDoubleWord:
-                        wordMultiplier *= 2;
-                        break;
-                    case TileBonusType.kTripleWord:
-                        wordMultiplier *= 3;
-                        break;
-                }
-            }
-
-            totalScore += tileScore; // Add the tile's score to the total
-        }
-
-        // Apply the word multiplier (e.g., double or triple word score)
-        totalScore *= wordMultiplier;
-
-        return (word, totalScore); // Return both the word and the total score
+        // Expand vertically for each placed tile
+        fullWordTiles.AddRange(ExpandWord(boardState, tile, 0, -1)); // Upward expansion
+        fullWordTiles.AddRange(ExpandWord(boardState, tile, 0, 1));  // Downward expansion
     }
+
+    // Add the placed tiles to the full word tiles (to ensure they are part of the word)
+    fullWordTiles.AddRange(placedTiles);
+
+    // Remove duplicate tiles
+    fullWordTiles = fullWordTiles.Distinct().ToList();
+
+    // Sort the full list of word tiles based on the direction
+    bool isHorizontal = fullWordTiles.All(tile => tile.Row == fullWordTiles[0].Row);
+    bool isVertical = fullWordTiles.All(tile => tile.Column == fullWordTiles[0].Column);
+
+    if (isHorizontal)
+    {
+        fullWordTiles.Sort((a, b) => a.Column.CompareTo(b.Column));  // Sort columns left to right
+    }
+    else if (isVertical)
+    {
+        fullWordTiles.Sort((a, b) => b.Row.CompareTo(a.Row));  // Sort rows top to bottom
+    }
+
+    // Variables to keep track of the word and its total score
+    string word = "";
+    int totalScore = 0;
+    int wordMultiplier = 1; // Multiplier for the word score (e.g., triple word score)
+
+    // Iterate over the sorted tiles to construct the word and calculate the score
+    foreach (var index in fullWordTiles)
+    {
+        var slotState = boardState.GetSlotState(index);
+        var letter = slotState.OccupiedLetter;
+
+        if (letter == null)
+            continue;
+
+        word += letter.Character.ToString();
+        int tileScore = letter.Score; // Base score of the letter
+
+        // Check if this slot has a bonus, and apply the corresponding bonus
+        if (!slotState.IsTileCommitted)
+        {
+            switch (slotState.BonusType)
+            {
+                case TileBonusType.kDoubleLetter:
+                    tileScore *= 2;
+                    break;
+                case TileBonusType.kTripleLetter:
+                    tileScore *= 3;
+                    break;
+                case TileBonusType.kDoubleWord:
+                    wordMultiplier *= 2;
+                    break;
+                case TileBonusType.kTripleWord:
+                    wordMultiplier *= 3;
+                    break;
+            }
+        }
+
+        totalScore += tileScore; // Add the tile's score to the total
+    }
+
+    // Apply the word multiplier (e.g., double or triple word score)
+    totalScore *= wordMultiplier;
+
+    return (word, totalScore); // Return both the word and the total score
+}
 
     // Helper function to expand word in a specific direction (dx, dy)
     private static List<BoardSlotIndex> ExpandWord(IReadOnlyBoardState boardState, BoardSlotIndex startTile, int dx, int dy)
@@ -243,7 +204,7 @@ public static class BoardDataHelper
     {
         contiguousTiles = new List<BoardSlotIndex>();
 
-        if (uncommittedTiles.Count < 1)
+        if (uncommittedTiles.Count < 1) 
         {
             return false;
         }
@@ -337,7 +298,7 @@ public static class BoardDataHelper
             BoardSlotIndex currentTile = tiles[i];
             BoardSlotIndex previousTile = tiles[i - 1];
 
-            int distance = isRowCheck ? currentTile.Row - previousTile.Row : currentTile.Column - previousTile.Column;
+            int distance = isRowCheck ? currentTile.Column - previousTile.Column : currentTile.Row - previousTile.Row;
 
             if (distance > 1)
             {
@@ -348,25 +309,35 @@ public static class BoardDataHelper
 
                     if (isRowCheck)
                     {
-                        intermediateTile.Row = previousTile.Row + j;
-                        intermediateTile.Column = previousTile.Column;
-                    }
-                    else
-                    {
                         intermediateTile.Row = previousTile.Row;
                         intermediateTile.Column = previousTile.Column + j;
                     }
+                    else
+                    {
+                        intermediateTile.Row = previousTile.Row + j;
+                        intermediateTile.Column = previousTile.Column;
+                    }
 
                     BoardSlotState intermediateSlot = boardState.GetSlotState(intermediateTile);
+
+                    // Check if the intermediate slot is occupied and the tile is committed
                     if (!intermediateSlot.IsOccupied || !intermediateSlot.IsTileCommitted)
                     {
                         contiguousTiles.Clear(); // Clear contiguous tiles if a gap can't be filled
                         return false; // If the gap is not filled by a committed tile, it's not valid
                     }
+
+                    // Add the intermediate committed tile to the contiguous list
+                    contiguousTiles.Add(intermediateTile);
                 }
             }
 
-            contiguousTiles.Add(currentTile); // Add to the contiguous list
+            contiguousTiles.Add(currentTile); // Add the current tile to the contiguous list
+        }
+
+        if (contiguousTiles.Count < 2)
+        {
+            return false;
         }
 
         return true; // All gaps are filled with committed tiles, so the tiles are contiguous

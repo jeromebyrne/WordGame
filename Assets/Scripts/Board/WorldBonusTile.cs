@@ -9,6 +9,13 @@ public class WorldBonusTile : MonoBehaviour
     const string kDoubleLetterString = "DL";
     const string kCenterTileString = "+";
 
+    // Define the colors for the bonus tiles
+    readonly Color kTripleWordColor = new Color(128f / 255f, 0f / 255f, 32f / 255f, 0.75f);  // Rich Burgundy (RGB: 128, 0, 32)
+    readonly Color kTripleLetterColor = new Color(65f / 255f, 105f / 255f, 225f / 255f, 0.5f);  // Royal Blue (RGB: 65, 105, 225)
+    readonly Color kDoubleWordColor = new Color(212f / 255f, 175f / 255f, 55f / 255f, 0.6f);  // Premium Gold (RGB: 212, 175, 55)
+    readonly Color kDoubleLetterColor = new Color(229f / 255f, 228f / 255f, 226f / 255f, 0.5f);  // Platinum (RGB: 229, 228, 226)
+    readonly Color kCenterTileColor = new Color(255f / 255f, 0f / 255f, 0f / 255f, 0.75f);
+
     [SerializeField] private TMP_Text _bonusText = null;
     [SerializeField] private SpriteRenderer _spriteRenderer = null;
 
@@ -24,23 +31,23 @@ public class WorldBonusTile : MonoBehaviour
         {
             case TileBonusType.kTripleWord:
                 {
-                    return Color.magenta;
+                    return kTripleWordColor;
                 }
             case TileBonusType.kTripleLetter:
                 {
-                    return Color.yellow;
+                    return kTripleLetterColor;
                 }
             case TileBonusType.kDoubleWord:
                 {
-                    return Color.cyan;
+                    return kDoubleWordColor;
                 }
             case TileBonusType.kDoubleLetter:
                 {
-                    return Color.green;
+                    return kDoubleLetterColor;
                 }
             case TileBonusType.kCenterTile:
                 {
-                    return Color.red;
+                    return kCenterTileColor;
                 }
             default:
                 {

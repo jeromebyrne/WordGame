@@ -7,6 +7,8 @@ public class WorldLetterTileVisual : MonoBehaviour
     [SerializeField] private TMP_Text _scoreText = null;
     [SerializeField] private SpriteRenderer _spriteRenderer = null;
 
+    private Color _initColor;
+
     public BoardSlotIndex GridIndex { get; private set; }
     public int PlayerIndex { get; set; }
     public bool IsLocked { get; private set; }
@@ -14,6 +16,16 @@ public class WorldLetterTileVisual : MonoBehaviour
     public LetterDataObj LetterData { get; private set; }
 
     public SpriteRenderer SpriteRenderer { get { return _spriteRenderer; } }
+
+    private void Start()
+    {
+        // here the tile have only been placed,
+        // discolor it so it stands out against already committed tiles
+        _spriteRenderer.color = Color.gray;
+        _initColor = _scoreText.color;
+        _scoreText.color = Color.white;
+        _letterText.color = Color.white;
+    }
 
     private void OnEnable()
     {
@@ -52,6 +64,9 @@ public class WorldLetterTileVisual : MonoBehaviour
             if (index == GridIndex)
             {
                 IsLocked = true;
+                _spriteRenderer.color = Color.white;
+                _letterText.color = _initColor;
+                _scoreText.color = _initColor;
                 return;
             }
         }

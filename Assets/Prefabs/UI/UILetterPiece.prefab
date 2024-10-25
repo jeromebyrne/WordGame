@@ -359,6 +359,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _letterLabel: {fileID: 8457211910258205797}
-  _pointsLabel: {fileID: 3881821874807685939}
+  _scoreLabel: {fileID: 3881821874807685939}
   _rectTransform: {fileID: 5789817181747744374}
   _image: {fileID: 6035534779391067735}

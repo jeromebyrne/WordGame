@@ -6,13 +6,15 @@ using UnityEngine.UI;
 public class UILetterTile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     [SerializeField] private TMP_Text _letterLabel;
-    [SerializeField] private TMP_Text _pointsLabel;
+    [SerializeField] private TMP_Text _scoreLabel;
     [SerializeField] RectTransform _rectTransform;
     [SerializeField] Image _image;
 
     static readonly Vector3 _selectedScale = new Vector3(1.0f, 1.0f, 1.0f);
     static readonly Color _selectedColor = new Color(0.5f, 0.5f, 0.5f, 0.6f);
     static readonly Color _unselectedColor = new Color(1.0f, 1.0f, 1.0f, 1.0f);
+
+    private Color _textInitColor;
 
     public RectTransform RectTransform { get { return _rectTransform; } }
 
@@ -21,6 +23,11 @@ public class UILetterTile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
     public int PlayerIndex { get; private set; }
 
     public LetterDataObj LetterInfo { get; private set; }
+
+    private void Start()
+    {
+        _textInitColor = _letterLabel.color;
+    }
 
     private void Awake()
     {
@@ -35,7 +42,7 @@ public class UILetterTile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
     public void Populate(LetterDataObj letterInfo, int playerIndex)
     {
         _letterLabel.text = letterInfo.Character.ToString().ToUpper();
-        _pointsLabel.text = letterInfo.Score.ToString();
+        _scoreLabel.text = letterInfo.Score.ToString();
         PlayerIndex = playerIndex;
         LetterInfo = letterInfo;
     }
@@ -50,6 +57,8 @@ public class UILetterTile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
 
         gameObject.transform.localScale = _selectedScale;
         _image.color = _selectedColor;
+        _letterLabel.color = Color.white;
+        _scoreLabel.color = Color.white;
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -75,5 +84,7 @@ public class UILetterTile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
 
         gameObject.transform.localScale = Vector3.one;
         _image.color = _unselectedColor;
+        _letterLabel.color = _textInitColor;
+        _scoreLabel.color = _textInitColor;
     }
 }

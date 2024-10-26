@@ -122,13 +122,27 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        List<(string, int)> wordAndScoreTupleList = BoardDataHelper.GetWordsAndScoresFromTiles(boardState, contiguousTiles);
+        List<(string, int, List<BoardSlotIndex>)> wordAndScoreTupleList = BoardDataHelper.GetWordsAndScoresFromTiles(boardState, contiguousTiles);
+
+        int wordCount = wordAndScoreTupleList.Count;
 
         foreach (var tup in wordAndScoreTupleList)
         {
             if (!WordConfigManager.IsValidWord(tup.Item1))
             {
                 Debug.Log(tup.Item1 + " is NOT a valid word!");
+                return;
+            }
+        }
+
+        if (wordCount > 0)
+        {
+            // here we want to check that the words returned have a common BoardSlotIndex
+            // Check if the words share a common BoardSlotIndex
+            bool wordsShareCommonTile = BoardDataHelper.DoWordsShareCommonTile(wordAndScoreTupleList);
+            if (!wordsShareCommonTile)
+            {
+                Debug.Log("Multi-Words do not share a common tile!");
                 return;
             }
         }

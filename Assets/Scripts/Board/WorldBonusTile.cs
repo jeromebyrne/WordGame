@@ -3,10 +3,10 @@ using UnityEngine;
 
 public class WorldBonusTile : MonoBehaviour
 {
-    const string kTripleWordString = "TW";
-    const string kTripleLetterString = "TL";
-    const string kDoubleWordString = "DW";
-    const string kDoubleLetterString = "DL";
+    const string kTripleWordString = "3W";
+    const string kTripleLetterString = "3L";
+    const string kDoubleWordString = "2W";
+    const string kDoubleLetterString = "2L";
     const string kCenterTileString = "+";
 
     // Define the colors for the bonus tiles

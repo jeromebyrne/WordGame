@@ -64,9 +64,11 @@ public class WorldLetterTileVisual : MonoBehaviour
             if (index == GridIndex)
             {
                 IsLocked = true;
-                _spriteRenderer.color = Color.white;
-                _letterText.color = _initColor;
-                _scoreText.color = _initColor;
+                // TODO: fix this, these can be null somehow
+                if (_spriteRenderer) _spriteRenderer.color = Color.white;
+                if (_letterText) _letterText.color = _initColor;
+                if (_scoreText) _scoreText.color = _initColor;
+
                 return;
             }
         }

@@ -122,15 +122,16 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        var wordAndScoreTuple = BoardDataHelper.GetWordAndScoreFromTiles(boardState, contiguousTiles);
+        List<(string, int)> wordAndScoreTupleList = BoardDataHelper.GetWordsAndScoresFromTiles(boardState, contiguousTiles);
 
-        if (!WordConfigManager.IsValidWord(wordAndScoreTuple.word))
+        foreach (var tup in wordAndScoreTupleList)
         {
-            Debug.Log(wordAndScoreTuple.word + " is NOT a valid word!");
-            return;
+            if (!WordConfigManager.IsValidWord(tup.Item1))
+            {
+                Debug.Log(tup.Item1 + " is NOT a valid word!");
+                return;
+            }
         }
-
-        Debug.Log(wordAndScoreTuple.word + " is a valid word!");
 
         List<LetterDataObj> lettersToCommit = new List<LetterDataObj>(); // we use these to remove form the player state below
 
@@ -142,9 +143,12 @@ public class GameManager : MonoBehaviour
 
         _gameBoard.CommitTiles(uncommittedTiles, _currentPlayerState.PlayerIndex);
 
-        Debug.Log("Score for " + wordAndScoreTuple.word + " is: " + wordAndScoreTuple.score.ToString());
+        foreach (var tup in wordAndScoreTupleList)
+        {
+            Debug.Log("Score for " + tup.Item1 + " is: " + tup.Item2.ToString());
 
-        _currentPlayerState.AddScore(wordAndScoreTuple.score);
+            _currentPlayerState.AddScore(tup.Item2);
+        }
 
         // remove the letters from the players state
         foreach (LetterDataObj l in lettersToCommit)

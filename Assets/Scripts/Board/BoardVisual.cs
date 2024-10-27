@@ -6,6 +6,7 @@ public class BoardVisual : MonoBehaviour
     [SerializeField] private SpriteRenderer _boardSprite;
     [SerializeField] private GameObject _letterTilePrefab;
     [SerializeField] private GameObject _bonusTilePrefab;
+    [SerializeField] private SpriteRenderer _frameSprite;
 
     // the int is the letter id
     private Dictionary<uint, SpriteRenderer> _letterTilesSpritesMap = new Dictionary<uint, SpriteRenderer>(); 
@@ -62,6 +63,12 @@ public class BoardVisual : MonoBehaviour
         }
 
         _boardSprite.size = dimensions;
+
+        Vector2 frameDimensions = dimensions;
+        frameDimensions.x += 1.0f;
+        frameDimensions.y += 1.0f;
+
+        _frameSprite.size = frameDimensions;
     }
 
     public void DestroyLetterTile(uint letterId)

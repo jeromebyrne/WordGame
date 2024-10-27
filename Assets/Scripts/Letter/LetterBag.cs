@@ -36,12 +36,15 @@ public class LetterBag
 
     public LetterDataObj PickRandomLetter()
     {
+        // TODO got a crash out of range here.
         int randomIndex = _random.Next(_letters.Count);
 
         LetterDataObj letterInfo = _letters[randomIndex];
 
         // Remove so it doesn't get picked again
         _letters.RemoveAt(randomIndex);
+
+        Debug.Log("LetterBag count is: " + _letters.Count.ToString());
 
         return letterInfo;
     }

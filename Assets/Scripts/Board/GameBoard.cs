@@ -43,6 +43,8 @@ public class GameBoard : MonoBehaviour
         }
 
         _draggedUILetterTile = evt.LetterTile;
+
+        // GameEventHandler.Instance.TriggerEvent(PlayAudioEvent.Get("Audio/select", 0.1f, false, false));
     }
 
     private void OnUITileEndDrag(UILetterTileEndDragEvent evt)
@@ -61,6 +63,7 @@ public class GameBoard : MonoBehaviour
         {
             UnityEngine. Debug.Log("Tile is NOT intersecting board");
             GameEventHandler.Instance.TriggerEvent(ReturnTileToHolderEvent.Get(evt.LetterTile.PlayerIndex, evt.LetterTile.LetterInfo.UniqueId));
+            GameEventHandler.Instance.TriggerEvent(PlayAudioEvent.Get("Audio/fly", 1.0f, false, false));
         }
 
         _draggedUILetterTile = null;
@@ -81,6 +84,8 @@ public class GameBoard : MonoBehaviour
 
         slotState.IsOccupied = false;
         _boardState.UpdateSlotState(worldTile.GridIndex, slotState);
+
+        // GameEventHandler.Instance.TriggerEvent(PlayAudioEvent.Get("Audio/select", 0.1f, false, false));
     }
 
     private void OnWorldTileEndDrag(WorldTileEndDragEvent evt)
@@ -93,10 +98,15 @@ public class GameBoard : MonoBehaviour
         {
             GameEventHandler.Instance.TriggerEvent(ReturnTileToHolderEvent.Get(evt.LetterTile.PlayerIndex, evt.LetterTile.LetterData.UniqueId));
             _boardVisual.DestroyLetterTile(evt.LetterTile.LetterData.UniqueId);
+            GameEventHandler.Instance.TriggerEvent(PlayAudioEvent.Get("Audio/fly", 1.0f, false, false));
             return;
         }
 
         SnapWorldTile(evt.LetterTile.PlayerIndex, evt.LetterTile, worldPos);
+
+        // play sound effect
+        int randomNumber = Random.Range(1, 5);
+        GameEventHandler.Instance.TriggerEvent(PlayAudioEvent.Get("Audio/tile_" + randomNumber.ToString(), 1.0f, false, false));
     }
 
     private void SnapWorldTile(int playerIndex, WorldLetterTileVisual worldTile, Vector2 worldPos)
@@ -143,8 +153,10 @@ public class GameBoard : MonoBehaviour
 
         SnapWorldTile(playerIndex, worldTile, worldPos);
 
-        var postEvt = UITilePlacedonBoardEvent.Get(playerIndex, uiTile);
-        GameEventHandler.Instance.TriggerEvent(postEvt);
+        GameEventHandler.Instance.TriggerEvent(UITilePlacedonBoardEvent.Get(playerIndex, uiTile));
+
+        int randomNumber = Random.Range(1, 5);
+        GameEventHandler.Instance.TriggerEvent(PlayAudioEvent.Get("Audio/tile_" + randomNumber.ToString(), 1.0f, false, false));
     }
 
     public void CommitTiles(List<BoardSlotIndex> tilesToCommit, int playerIndex)
@@ -161,4 +173,5 @@ public class GameBoard : MonoBehaviour
 
         GameEventHandler.Instance.TriggerEvent(TilesCommittedEvent.Get(playerIndex, tilesToCommit, letterIds));
     }
+    
 }

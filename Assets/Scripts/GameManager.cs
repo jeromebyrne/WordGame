@@ -39,6 +39,9 @@ public class GameManager : MonoBehaviour
 
         _currentPlayerState = _playerOneState;
         GameEventHandler.Instance.TriggerEvent(ConfirmSwitchPlayerEvent.Get(-1, 1));
+
+        // play background music
+        GameEventHandler.Instance.TriggerEvent(PlayAudioEvent.Get("Audio/past_sadness", 1.0f, true, true));
     }
 
     void AssignInitialLettersToPlayers()
@@ -60,6 +63,11 @@ public class GameManager : MonoBehaviour
 
     void AssignRandomLetterToPlayer(PlayerState playerState)
     {
+        if (!_letterBag.HasLetterToPick())
+        {
+            return;
+        }
+
         LetterDataObj randomLetter = _letterBag.PickRandomLetter();
         playerState.AssignLetter(randomLetter);
 

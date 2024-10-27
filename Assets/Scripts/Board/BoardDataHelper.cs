@@ -198,33 +198,61 @@ public static class BoardDataHelper
 
         bool isFirstTurn = boardState.GetCommittedTileCount() == 0;
 
-        // Ensure that all placed tiles are in a single line (either row or column)
-        if (!AreTilesInSingleLine(uncommittedTiles))
+        // Check if this is the first turn where only placed tiles need to be contiguous
+        if (isFirstTurn)
         {
-            Debug.Log("Tiles must be in a single row or column.");
+            return AreTilesConnectedWithin(uncommittedTiles, boardState, out contiguousTiles);
+        }
+
+        // Step 1: Ensure all placed tiles form a single interconnected group (horizontal or vertical)
+        if (!AreTilesInSingleLineOrConnected(uncommittedTiles, boardState))
+        {
+            Debug.Log("Tiles must form a single line or connect through a shared tile.");
             return false;
         }
 
-        // Check for connectivity among uncommitted tiles
+        // Step 2: Ensure connection to any existing committed tile
+        bool connectsToCommittedTile = uncommittedTiles.Any(tile =>
+        {
+            var neighbors = GetNeighboringIndices(tile, boardState.Dimensions);
+            return neighbors.Any(neighbor => boardState.GetSlotState(neighbor).IsTileCommitted);
+        });
+
+        if (!connectsToCommittedTile)
+        {
+            Debug.Log("Placed tiles must connect with at least one committed tile.");
+            return false;
+        }
+
+        // Step 3: Verify that all uncommitted tiles are connected to form a contiguous group.
+        return AreTilesConnectedWithin(uncommittedTiles, boardState, out contiguousTiles);
+    }
+
+    // Check if tiles form a single line or are connected through shared letters
+    private static bool AreTilesInSingleLineOrConnected(List<BoardSlotIndex> placedTiles, IReadOnlyBoardState boardState)
+    {
+        bool sameRow = placedTiles.All(tile => tile.Row == placedTiles[0].Row);
+        bool sameColumn = placedTiles.All(tile => tile.Column == placedTiles[0].Column);
+
+        // If they are in a single line, return true
+        if (sameRow || sameColumn)
+            return true;
+
+        // Otherwise, check if all placed tiles are indirectly connected via shared tiles
         var toVisit = new Queue<BoardSlotIndex>();
         var visited = new HashSet<BoardSlotIndex>();
 
-        toVisit.Enqueue(uncommittedTiles[0]);
-        visited.Add(uncommittedTiles[0]);
+        toVisit.Enqueue(placedTiles[0]);
+        visited.Add(placedTiles[0]);
 
         while (toVisit.Count > 0)
         {
             var currentTile = toVisit.Dequeue();
-            contiguousTiles.Add(currentTile);
-
             var neighbors = GetNeighboringIndices(currentTile, boardState.Dimensions);
+
             foreach (var neighbor in neighbors)
             {
-                var neighborSlot = boardState.GetSlotState(neighbor);
-                bool isUncommittedTile = uncommittedTiles.Contains(neighbor);
-                bool isCommittedTile = neighborSlot.IsOccupied && neighborSlot.IsTileCommitted;
-
-                if ((isUncommittedTile || (!isFirstTurn && isCommittedTile)) && !visited.Contains(neighbor))
+                if (placedTiles.Contains(neighbor) && !visited.Contains(neighbor))
                 {
                     visited.Add(neighbor);
                     toVisit.Enqueue(neighbor);
@@ -232,22 +260,53 @@ public static class BoardDataHelper
             }
         }
 
-        // Check that all uncommitted tiles were visited
-        bool allTilesConnected = visited.Intersect(uncommittedTiles).Count() == uncommittedTiles.Count;
-        if (!allTilesConnected)
+        // All placed tiles must be visited if they are connected
+        return visited.Count == placedTiles.Count;
+    }
+
+    private static bool AreTilesConnectedWithin(List<BoardSlotIndex> tiles, IReadOnlyBoardState boardState, out List<BoardSlotIndex> contiguousTiles)
+    {
+        contiguousTiles = new List<BoardSlotIndex>();
+        if (tiles.Count == 0) return false;
+        if (tiles.Count == 1) // Only one tile, trivially contiguous
         {
-            Debug.Log("All tiles must be connected.");
-            return false;
+            contiguousTiles.Add(tiles[0]);
+            return true;
         }
 
-        // Ensure connection with committed tiles for non-first turns
-        if (!isFirstTurn && !ArePlacedTilesConnectingWithCommittedTile(boardState, uncommittedTiles))
+        var toVisit = new Queue<BoardSlotIndex>();
+        var visited = new HashSet<BoardSlotIndex>();
+
+        // Start flood fill from the first tile in the list
+        toVisit.Enqueue(tiles[0]);
+        visited.Add(tiles[0]);
+
+        while (toVisit.Count > 0)
         {
-            Debug.Log("Placed tiles must connect with at least one committed tile.");
-            return false;
+            var currentTile = toVisit.Dequeue();
+            contiguousTiles.Add(currentTile);
+
+            // Get horizontal and vertical neighbors
+            var neighbors = GetNeighboringIndices(currentTile, boardState.Dimensions);
+            foreach (var neighbor in neighbors)
+            {
+                // Only add unvisited tiles that are part of the placed tiles list or committed tiles that form intersections
+                var neighborState = boardState.GetSlotState(neighbor);
+                bool isPartOfPlacedOrCommittedWord = tiles.Contains(neighbor) || (neighborState.IsOccupied && neighborState.IsTileCommitted);
+
+                if (isPartOfPlacedOrCommittedWord && !visited.Contains(neighbor))
+                {
+                    visited.Add(neighbor);
+                    toVisit.Enqueue(neighbor);
+                }
+            }
         }
 
-        return true;
+        // Ensure contiguousTiles is populated with all visited tiles
+        contiguousTiles = visited.ToList();
+
+        // Check if every tile in the input list was visited (indicating full contiguity)
+        return visited.Intersect(tiles).Count() == tiles.Count;
     }
 
     private static bool AreTilesInSingleLine(List<BoardSlotIndex> placedTiles)

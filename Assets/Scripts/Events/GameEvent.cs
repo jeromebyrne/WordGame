@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 public abstract class GameEvent
 {
@@ -244,5 +245,31 @@ public class PlayerStateUpdatedEvent : GameEvent
     public override void Reset()
     {
         PlayerState = null;
+    }
+}
+
+public class PlayAudioEvent : GameEvent
+{
+    public string AudioClipPath { get; private set; }
+    public float Volume { get; private set; } = 1.0f;
+    public bool Loop { get; private set; }
+    public bool IsMusic { get; private set; }
+
+    public static PlayAudioEvent Get(string path, float volume, bool loop, bool isMusic)
+    {
+        var evt = Get<PlayAudioEvent>();
+        evt.AudioClipPath = path;
+        evt.Volume = Mathf.Clamp(volume, 0f, 1f);
+        evt.Loop = loop;
+        evt.IsMusic = isMusic;
+        return evt;
+    }
+
+    public override void Reset()
+    {
+        AudioClipPath = "";
+        Volume = 1.0f;
+        Loop = false;
+        IsMusic = false;
     }
 }

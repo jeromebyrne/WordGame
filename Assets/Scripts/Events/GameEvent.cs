@@ -273,3 +273,67 @@ public class PlayAudioEvent : GameEvent
         IsMusic = false;
     }
 }
+
+public class StopAudioEvent : GameEvent
+{
+    public string AudioClipPath { get; private set; }
+
+    public static StopAudioEvent Get(string path)
+    {
+        var evt = Get<StopAudioEvent>();
+        evt.AudioClipPath = path;
+        return evt;
+    }
+
+    public override void Reset()
+    {
+        AudioClipPath = "";
+    }
+}
+
+public class StartTurnCountdownTimer : GameEvent
+{
+    public float CountdownTime { get; private set; }
+
+    public static StartTurnCountdownTimer Get(float countdownTime)
+    {
+        var evt = Get<StartTurnCountdownTimer>();
+        evt.CountdownTime = countdownTime;
+        return evt;
+    }
+
+    public override void Reset()
+    {
+        CountdownTime = 0.0f;
+    }
+}
+
+public class StopTurnCountdownTimer : GameEvent
+{
+    public static StopTurnCountdownTimer Get()
+    {
+        var evt = Get<StopTurnCountdownTimer>();
+        return evt;
+    }
+
+    public override void Reset()
+    {
+    }
+}
+
+public class ReturnAllUncommittedTilesToHolder : GameEvent
+{
+    public int PlayerIndex { get; private set; }
+
+    public static ReturnAllUncommittedTilesToHolder Get(int playerIndex)
+    {
+        var evt = Get<ReturnAllUncommittedTilesToHolder>();
+        evt.PlayerIndex = playerIndex;
+        return evt;
+    }
+
+    public override void Reset()
+    {
+        PlayerIndex = -1;
+    }
+}

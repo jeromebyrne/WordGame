@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class UILetterTile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+public class UILetterTile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerDownHandler, IPointerUpHandler
 {
     [SerializeField] private TMP_Text _letterLabel;
     [SerializeField] private TMP_Text _scoreLabel;
@@ -20,6 +20,8 @@ public class UILetterTile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
 
     private CanvasGroup _canvasGroup;
 
+    private bool _isDragging = false;
+
     public int PlayerIndex { get; private set; }
 
     public LetterDataObj LetterInfo { get; private set; }
@@ -27,6 +29,16 @@ public class UILetterTile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
     private void Start()
     {
         _textInitColor = _letterLabel.color;
+    }
+
+    private void OnEnable()
+    {
+        GameEventHandler.Instance.Subscribe<ReturnAllUncommittedTilesToHolder>(OnReturnAllUncommittedTiles);
+    }
+
+    private void OnDisable()
+    {
+        GameEventHandler.Instance.Unsubscribe<ReturnAllUncommittedTilesToHolder>(OnReturnAllUncommittedTiles);
     }
 
     private void Awake()
@@ -47,18 +59,50 @@ public class UILetterTile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
         LetterInfo = letterInfo;
     }
 
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        _canvasGroup.blocksRaycasts = false;
+        _isDragging = true;
+
+        ShowSelectedVisuals(true);
+    }
+
+    public void OnPointerUp(PointerEventData eventData)
+    {
+        _canvasGroup.blocksRaycasts = true;
+        _isDragging = false;
+
+        ShowSelectedVisuals(false);
+    }
+
+    void ShowSelectedVisuals(bool show)
+    {
+        if (show)
+        {
+            gameObject.transform.localScale = _selectedScale;
+            _image.color = _selectedColor;
+            _letterLabel.color = Color.white;
+            _scoreLabel.color = Color.white;
+        }
+        else
+        {
+            gameObject.transform.localScale = Vector3.one;
+            _image.color = _unselectedColor;
+            _letterLabel.color = _textInitColor;
+            _scoreLabel.color = _textInitColor;
+        }
+    }
+
     public void OnBeginDrag(PointerEventData eventData)
     {
         _canvasGroup.blocksRaycasts = false;
+        _isDragging = true;
 
         // post a drag start event
         var evt = UILetterTileStartDragEvent.Get(this);
         GameEventHandler.Instance.TriggerEvent(evt);
 
-        gameObject.transform.localScale = _selectedScale;
-        _image.color = _selectedColor;
-        _letterLabel.color = Color.white;
-        _scoreLabel.color = Color.white;
+        ShowSelectedVisuals(true);
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -76,15 +120,30 @@ public class UILetterTile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        _canvasGroup.blocksRaycasts = true;
+        EndDrag();
 
         // post a drag end event
         var evt = UILetterTileEndDragEvent.Get(this);
         GameEventHandler.Instance.TriggerEvent(evt);
+    }
 
-        gameObject.transform.localScale = Vector3.one;
-        _image.color = _unselectedColor;
-        _letterLabel.color = _textInitColor;
-        _scoreLabel.color = _textInitColor;
+    private void EndDrag()
+    {
+        _canvasGroup.blocksRaycasts = true;
+        _isDragging = false;
+
+        ShowSelectedVisuals(false);
+    }
+
+    private void OnReturnAllUncommittedTiles(ReturnAllUncommittedTilesToHolder evt)
+    {
+        if (!_isDragging)
+        {
+            return;
+        }
+
+        EndDrag();
+
+        GameEventHandler.Instance.TriggerEvent(ReturnTileToHolderEvent.Get(evt.PlayerIndex, LetterInfo.UniqueId));
     }
 }

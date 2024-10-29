@@ -19,6 +19,8 @@ public class GameBoard : MonoBehaviour
         GameEventHandler.Instance.Subscribe<UILetterTileEndDragEvent>(OnUITileEndDrag);
         GameEventHandler.Instance.Subscribe<WorldTileStartDragEvent>(OnWorldTileStartDrag);
         GameEventHandler.Instance.Subscribe<WorldTileEndDragEvent>(OnWorldTileEndDrag);
+        GameEventHandler.Instance.Subscribe<ReturnAllUncommittedTilesToHolder>(OnReturnAllUncommittedTiles);
+        
     }
 
     private void OnDisable()
@@ -27,6 +29,7 @@ public class GameBoard : MonoBehaviour
         GameEventHandler.Instance.Unsubscribe<UILetterTileEndDragEvent>(OnUITileEndDrag);
         GameEventHandler.Instance.Unsubscribe<WorldTileStartDragEvent>(OnWorldTileStartDrag);
         GameEventHandler.Instance.Unsubscribe<WorldTileEndDragEvent>(OnWorldTileEndDrag);
+        GameEventHandler.Instance.Unsubscribe<ReturnAllUncommittedTilesToHolder>(OnReturnAllUncommittedTiles);
     }
 
     public void Init()
@@ -173,5 +176,30 @@ public class GameBoard : MonoBehaviour
 
         GameEventHandler.Instance.TriggerEvent(TilesCommittedEvent.Get(playerIndex, tilesToCommit, letterIds));
     }
-    
+
+    private void OnReturnAllUncommittedTiles(ReturnAllUncommittedTilesToHolder evt)
+    {
+        List<BoardSlotIndex> placedIndices = BoardDataHelper.GetUncommittedTiles(_boardState);
+
+        int count = 0;
+
+        foreach (BoardSlotIndex index in placedIndices)
+        {
+            BoardSlotState slotState = _boardState.GetSlotState(index);
+
+            if (slotState.IsOccupied && !slotState.IsTileCommitted)
+            {
+                GameEventHandler.Instance.TriggerEvent(ReturnTileToHolderEvent.Get(evt.PlayerIndex, slotState.OccupiedLetter.UniqueId));
+                slotState.IsOccupied = false;
+                _boardState.UpdateSlotState(index, slotState);
+                _boardVisual.DestroyLetterTile(slotState.OccupiedLetter.UniqueId);
+                count++;
+            }
+        }
+
+        if (count > 0)
+        {
+            GameEventHandler.Instance.TriggerEvent(PlayAudioEvent.Get("Audio/fly", 1.0f, false, false));
+        }
+    }
 }

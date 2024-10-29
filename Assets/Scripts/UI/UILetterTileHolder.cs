@@ -155,8 +155,6 @@ public class UILetterTileHolder : MonoBehaviour
         evt.Tile.gameObject.SetActive(false);
     }
 
-    // TODO: on tiles committed
-
     bool HasAvailableSlotForTile(int playerIndex)
     {
         TilePlacementInfo tpi = _tilePlacementPlayerMap[playerIndex];

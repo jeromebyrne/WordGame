@@ -28,11 +28,13 @@ public class GameAudioHandler : MonoBehaviour
     private void OnEnable()
     {
         GameEventHandler.Instance.Subscribe<PlayAudioEvent>(OnPlayAudio);
+        GameEventHandler.Instance.Subscribe<StopAudioEvent>(OnStopAudio);
     }
 
     private void OnDisable()
     {
         GameEventHandler.Instance.Unsubscribe<PlayAudioEvent>(OnPlayAudio);
+        GameEventHandler.Instance.Unsubscribe<StopAudioEvent>(OnStopAudio);
     }
 
     private void OnPlayAudio(PlayAudioEvent evt)
@@ -61,6 +63,35 @@ public class GameAudioHandler : MonoBehaviour
         {
             PlaySoundEffect(clip, evt.Loop);
         }
+    }
+
+    private void OnStopAudio(StopAudioEvent evt)
+    {
+        // Check if the audio clip is cached
+        if (!_audioCache.TryGetValue(evt.AudioClipPath, out AudioClip clip))
+        {
+            Debug.LogWarning("Audio clip not found in cache: " + evt.AudioClipPath);
+            return;
+        }
+
+        // Stop music if it's the clip currently playing
+        if (_musicSource.isPlaying && _musicSource.clip == clip)
+        {
+            _musicSource.Stop();
+            return;
+        }
+
+        // Stop sound effect if it's playing in any of the SFX sources
+        foreach (var sfxSource in _sfxSources)
+        {
+            if (sfxSource.isPlaying && sfxSource.clip == clip)
+            {
+                sfxSource.Stop();
+                // return; // Stops the first matching clip; remove this if multiple instances need stopping
+            }
+        }
+
+        Debug.Log("Audio clip is not currently playing: " + evt.AudioClipPath);
     }
 
     private void PlayMusic(AudioClip clip, bool loop)

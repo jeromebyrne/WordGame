@@ -16,11 +16,13 @@ public class WorldTileDragHandler : MonoBehaviour
     private void OnEnable()
     {
         GameEventHandler.Instance.Subscribe<ReturnTileToHolderEvent>(OnTileReturnedToHolder);
+        GameEventHandler.Instance.Subscribe<ReturnAllUncommittedTilesToHolder>(OnReturnAllUncommittedTiles);
     }
 
     private void OnDisable()
     {
         GameEventHandler.Instance.Unsubscribe<ReturnTileToHolderEvent>(OnTileReturnedToHolder);
+        GameEventHandler.Instance.Unsubscribe<ReturnAllUncommittedTilesToHolder>(OnReturnAllUncommittedTiles);
     }
 
     void Update()
@@ -91,8 +93,7 @@ public class WorldTileDragHandler : MonoBehaviour
                 _selectedTile = sr.gameObject;
                 _isDragging = true;
 
-                var postEvt = WorldTileStartDragEvent.Get(visualComponent);
-                GameEventHandler.Instance.TriggerEvent(postEvt);
+                GameEventHandler.Instance.TriggerEvent(WorldTileStartDragEvent.Get(visualComponent));
 
                 break;
             }
@@ -120,16 +121,36 @@ public class WorldTileDragHandler : MonoBehaviour
 
     void OnTileReturnedToHolder(ReturnTileToHolderEvent evt)
     {
-        if (_selectedTile)
+        if (_selectedTile == null)
         {
-            WorldLetterTileVisual tileVisual = _selectedTile.gameObject.GetComponent<WorldLetterTileVisual>();
-
-            if (tileVisual.LetterData.UniqueId == evt.LetterId)
-            {
-                // this tile will be destroyed
-                _selectedTile = null;
-                _isDragging = false;
-            }
+            return;
         }
+
+        WorldLetterTileVisual tileVisual = _selectedTile.gameObject.GetComponent<WorldLetterTileVisual>();
+
+        if (tileVisual.LetterData.UniqueId == evt.LetterId)
+        {
+            // this tile will be destroyed
+            _selectedTile = null;
+            _isDragging = false;
+        }
+    }
+
+    void OnReturnAllUncommittedTiles(ReturnAllUncommittedTilesToHolder evt)
+    {
+        if (_selectedTile == null)
+        {
+            return;
+        }
+
+        // TODO: should listen for the event in board Visual and destroy there
+        var visualComponent = _selectedTile.GetComponent<WorldLetterTileVisual>();
+
+        GameEventHandler.Instance.TriggerEvent(ReturnTileToHolderEvent.Get(evt.PlayerIndex, visualComponent.LetterData.UniqueId));
+
+        _boardVisual.DestroyLetterTile(visualComponent.LetterData.UniqueId);
+
+        _selectedTile = null;
+        _isDragging = false;
     }
 }

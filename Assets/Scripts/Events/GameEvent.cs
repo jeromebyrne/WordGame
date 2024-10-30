@@ -291,13 +291,13 @@ public class StopAudioEvent : GameEvent
     }
 }
 
-public class StartTurnCountdownTimer : GameEvent
+public class StartTurnCountdownTimerEvent : GameEvent
 {
     public float CountdownTime { get; private set; }
 
-    public static StartTurnCountdownTimer Get(float countdownTime)
+    public static StartTurnCountdownTimerEvent Get(float countdownTime)
     {
-        var evt = Get<StartTurnCountdownTimer>();
+        var evt = Get<StartTurnCountdownTimerEvent>();
         evt.CountdownTime = countdownTime;
         return evt;
     }
@@ -308,11 +308,11 @@ public class StartTurnCountdownTimer : GameEvent
     }
 }
 
-public class StopTurnCountdownTimer : GameEvent
+public class StopTurnCountdownTimerEvent : GameEvent
 {
-    public static StopTurnCountdownTimer Get()
+    public static StopTurnCountdownTimerEvent Get()
     {
-        var evt = Get<StopTurnCountdownTimer>();
+        var evt = Get<StopTurnCountdownTimerEvent>();
         return evt;
     }
 
@@ -321,13 +321,13 @@ public class StopTurnCountdownTimer : GameEvent
     }
 }
 
-public class ReturnAllUncommittedTilesToHolder : GameEvent
+public class ReturnAllUncommittedTilesToHolderEvent : GameEvent
 {
     public int PlayerIndex { get; private set; }
 
-    public static ReturnAllUncommittedTilesToHolder Get(int playerIndex)
+    public static ReturnAllUncommittedTilesToHolderEvent Get(int playerIndex)
     {
-        var evt = Get<ReturnAllUncommittedTilesToHolder>();
+        var evt = Get<ReturnAllUncommittedTilesToHolderEvent>();
         evt.PlayerIndex = playerIndex;
         return evt;
     }
@@ -335,5 +335,35 @@ public class ReturnAllUncommittedTilesToHolder : GameEvent
     public override void Reset()
     {
         PlayerIndex = -1;
+    }
+}
+
+public class DisplayMessageBubbleEvent : GameEvent
+{
+    public string Message { get; private set; }
+
+    public static DisplayMessageBubbleEvent Get(string message)
+    {
+        var evt = Get<DisplayMessageBubbleEvent>();
+        evt.Message = message;
+        return evt;
+    }
+
+    public override void Reset()
+    {
+        Message = "";
+    }
+}
+
+public class DismissMessageBubbleEvent : GameEvent
+{
+    public static DismissMessageBubbleEvent Get()
+    {
+        var evt = Get<DismissMessageBubbleEvent>();
+        return evt;
+    }
+
+    public override void Reset()
+    {
     }
 }

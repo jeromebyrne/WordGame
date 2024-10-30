@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEditor.VersionControl;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -100,11 +101,20 @@ public class GameManager : MonoBehaviour
 
         var uncommittedTiles = BoardDataHelper.GetUncommittedTiles(boardState);
 
+        if (uncommittedTiles.Count < 1)
+        {
+            string message = "Drag letter tiles from the bottom of the screen onto the game board";
+            GameEventHandler.Instance.TriggerEvent(DisplayMessageBubbleEvent.Get(message));
+            PlayErrorAudio();
+            return;
+        }
+
         List<BoardSlotIndex> contiguousTiles = new List<BoardSlotIndex>();
 
         if (!BoardDataHelper.AreTilesContiguous(uncommittedTiles, boardState, out contiguousTiles))
         {
-            Debug.Log("Placed tiles are not contiguous!");
+            string message = "Letter tiles must be placed contiguously, vertically or horizontally";
+            GameEventHandler.Instance.TriggerEvent(DisplayMessageBubbleEvent.Get(message));
             PlayErrorAudio();
             return;
         }
@@ -119,14 +129,16 @@ public class GameManager : MonoBehaviour
             // the player needs to occupy the center slot on the first turn
             if (!boardState.IsCenterTileOccupied())
             {
-                Debug.Log("The center tile must be occupied on the first turn");
+                string message = "You must place a letter tile on the center red square on the first move";
+                GameEventHandler.Instance.TriggerEvent(DisplayMessageBubbleEvent.Get(message));
                 PlayErrorAudio();
                 return;
             }
 
             if (uncommittedTiles.Count < 2)
             {
-                Debug.Log("Words must be at least 2 letters");
+                string message = "Words must consist of at least 2 letters";
+                GameEventHandler.Instance.TriggerEvent(DisplayMessageBubbleEvent.Get(message));
                 PlayErrorAudio();
                 return;
             }
@@ -137,7 +149,8 @@ public class GameManager : MonoBehaviour
             bool connecting = BoardDataHelper.ArePlacedTilesConnectingWithCommittedTile(boardState, uncommittedTiles);
             if (!connecting)
             {
-                Debug.Log("Placed tiles are not connecting with previously placed tiles");
+                string message = "Placed letter tiles are not connecting with previously placed tiles";
+                GameEventHandler.Instance.TriggerEvent(DisplayMessageBubbleEvent.Get(message));
                 PlayErrorAudio();
                 return;
             }
@@ -151,7 +164,8 @@ public class GameManager : MonoBehaviour
         {
             if (!WordConfigManager.IsValidWord(tup.Item1))
             {
-                Debug.Log(tup.Item1 + " is NOT a valid word!");
+                string message = "\"" + tup.Item1.ToUpper() + "\"" + " is not a supported word";
+                GameEventHandler.Instance.TriggerEvent(DisplayMessageBubbleEvent.Get(message));
                 PlayErrorAudio();
                 return;
             }
@@ -164,7 +178,8 @@ public class GameManager : MonoBehaviour
             bool wordsShareCommonTile = BoardDataHelper.DoWordsShareCommonTile(wordAndScoreTupleList);
             if (!wordsShareCommonTile)
             {
-                Debug.Log("Multi-Words do not share a common tile!");
+                string message = "Multi-Words do not share a common letter tile";
+                GameEventHandler.Instance.TriggerEvent(DisplayMessageBubbleEvent.Get(message));
                 PlayErrorAudio();
                 return;
             }
@@ -211,7 +226,7 @@ public class GameManager : MonoBehaviour
         // stop the countdown if it's active
         _currentTurnTimeSeconds = 0.0f;
         _hasTriggeredCountdown = false;
-        GameEventHandler.Instance.TriggerEvent(StopTurnCountdownTimer.Get());
+        GameEventHandler.Instance.TriggerEvent(StopTurnCountdownTimerEvent.Get());
         GameEventHandler.Instance.TriggerEvent(StopAudioEvent.Get("Audio/clock"));
     }
 
@@ -224,7 +239,7 @@ public class GameManager : MonoBehaviour
     {
         if (!_hasTriggeredCountdown && _currentTurnTimeSeconds > (kMaxTurnTimeSeconds - kTurnCountdownTime))
         {
-            GameEventHandler.Instance.TriggerEvent(StartTurnCountdownTimer.Get(kTurnCountdownTime));
+            GameEventHandler.Instance.TriggerEvent(StartTurnCountdownTimerEvent.Get(kTurnCountdownTime));
             _hasTriggeredCountdown = true;
 
             GameEventHandler.Instance.TriggerEvent(PlayAudioEvent.Get("Audio/clock", 1.0f, true, false));
@@ -235,7 +250,7 @@ public class GameManager : MonoBehaviour
         if (_currentTurnTimeSeconds > kMaxTurnTimeSeconds)
         {
             // skip the turn (no points)
-            GameEventHandler.Instance.TriggerEvent(ReturnAllUncommittedTilesToHolder.Get(_currentPlayerState.PlayerIndex));
+            GameEventHandler.Instance.TriggerEvent(ReturnAllUncommittedTilesToHolderEvent.Get(_currentPlayerState.PlayerIndex));
 
             SwitchToNextPlayerTurn();
         }

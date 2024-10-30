@@ -19,7 +19,7 @@ public class GameBoard : MonoBehaviour
         GameEventHandler.Instance.Subscribe<UILetterTileEndDragEvent>(OnUITileEndDrag);
         GameEventHandler.Instance.Subscribe<WorldTileStartDragEvent>(OnWorldTileStartDrag);
         GameEventHandler.Instance.Subscribe<WorldTileEndDragEvent>(OnWorldTileEndDrag);
-        GameEventHandler.Instance.Subscribe<ReturnAllUncommittedTilesToHolder>(OnReturnAllUncommittedTiles);
+        GameEventHandler.Instance.Subscribe<ReturnAllUncommittedTilesToHolderEvent>(OnReturnAllUncommittedTiles);
         
     }
 
@@ -29,7 +29,7 @@ public class GameBoard : MonoBehaviour
         GameEventHandler.Instance.Unsubscribe<UILetterTileEndDragEvent>(OnUITileEndDrag);
         GameEventHandler.Instance.Unsubscribe<WorldTileStartDragEvent>(OnWorldTileStartDrag);
         GameEventHandler.Instance.Unsubscribe<WorldTileEndDragEvent>(OnWorldTileEndDrag);
-        GameEventHandler.Instance.Unsubscribe<ReturnAllUncommittedTilesToHolder>(OnReturnAllUncommittedTiles);
+        GameEventHandler.Instance.Unsubscribe<ReturnAllUncommittedTilesToHolderEvent>(OnReturnAllUncommittedTiles);
     }
 
     public void Init()
@@ -177,7 +177,7 @@ public class GameBoard : MonoBehaviour
         GameEventHandler.Instance.TriggerEvent(TilesCommittedEvent.Get(playerIndex, tilesToCommit, letterIds));
     }
 
-    private void OnReturnAllUncommittedTiles(ReturnAllUncommittedTilesToHolder evt)
+    private void OnReturnAllUncommittedTiles(ReturnAllUncommittedTilesToHolderEvent evt)
     {
         List<BoardSlotIndex> placedIndices = BoardDataHelper.GetUncommittedTiles(_boardState);
 

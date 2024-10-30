@@ -33,12 +33,12 @@ public class UILetterTile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
 
     private void OnEnable()
     {
-        GameEventHandler.Instance.Subscribe<ReturnAllUncommittedTilesToHolder>(OnReturnAllUncommittedTiles);
+        GameEventHandler.Instance.Subscribe<ReturnAllUncommittedTilesToHolderEvent>(OnReturnAllUncommittedTiles);
     }
 
     private void OnDisable()
     {
-        GameEventHandler.Instance.Unsubscribe<ReturnAllUncommittedTilesToHolder>(OnReturnAllUncommittedTiles);
+        GameEventHandler.Instance.Unsubscribe<ReturnAllUncommittedTilesToHolderEvent>(OnReturnAllUncommittedTiles);
     }
 
     private void Awake()
@@ -135,7 +135,7 @@ public class UILetterTile : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
         ShowSelectedVisuals(false);
     }
 
-    private void OnReturnAllUncommittedTiles(ReturnAllUncommittedTilesToHolder evt)
+    private void OnReturnAllUncommittedTiles(ReturnAllUncommittedTilesToHolderEvent evt)
     {
         if (!_isDragging)
         {

@@ -18,17 +18,17 @@ public class UICountdownTimer : MonoBehaviour
 
     public void OnEnable()
     {
-        GameEventHandler.Instance.Subscribe<StartTurnCountdownTimer>(OnStartTimerEvent);
-        GameEventHandler.Instance.Subscribe<StopTurnCountdownTimer>(OnStopTimerEvent);
+        GameEventHandler.Instance.Subscribe<StartTurnCountdownTimerEvent>(OnStartTimerEvent);
+        GameEventHandler.Instance.Subscribe<StopTurnCountdownTimerEvent>(OnStopTimerEvent);
     }
 
     public void OnDisable()
     {
-        GameEventHandler.Instance.Unsubscribe<StartTurnCountdownTimer>(OnStartTimerEvent);
-        GameEventHandler.Instance.Unsubscribe<StopTurnCountdownTimer>(OnStopTimerEvent);
+        GameEventHandler.Instance.Unsubscribe<StartTurnCountdownTimerEvent>(OnStartTimerEvent);
+        GameEventHandler.Instance.Unsubscribe<StopTurnCountdownTimerEvent>(OnStopTimerEvent);
     }
 
-    void OnStartTimerEvent(StartTurnCountdownTimer evt)
+    void OnStartTimerEvent(StartTurnCountdownTimerEvent evt)
     {
         _currentCountdownTime = evt.CountdownTime;
         _countdownTime = evt.CountdownTime;
@@ -39,7 +39,7 @@ public class UICountdownTimer : MonoBehaviour
         EnableElements(true);
     }
 
-    void OnStopTimerEvent(StopTurnCountdownTimer evt)
+    void OnStopTimerEvent(StopTurnCountdownTimerEvent evt)
     {
         EnableElements(false);
     }

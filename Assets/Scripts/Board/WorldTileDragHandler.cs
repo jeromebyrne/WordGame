@@ -16,13 +16,13 @@ public class WorldTileDragHandler : MonoBehaviour
     private void OnEnable()
     {
         GameEventHandler.Instance.Subscribe<ReturnTileToHolderEvent>(OnTileReturnedToHolder);
-        GameEventHandler.Instance.Subscribe<ReturnAllUncommittedTilesToHolder>(OnReturnAllUncommittedTiles);
+        GameEventHandler.Instance.Subscribe<ReturnAllUncommittedTilesToHolderEvent>(OnReturnAllUncommittedTiles);
     }
 
     private void OnDisable()
     {
         GameEventHandler.Instance.Unsubscribe<ReturnTileToHolderEvent>(OnTileReturnedToHolder);
-        GameEventHandler.Instance.Unsubscribe<ReturnAllUncommittedTilesToHolder>(OnReturnAllUncommittedTiles);
+        GameEventHandler.Instance.Unsubscribe<ReturnAllUncommittedTilesToHolderEvent>(OnReturnAllUncommittedTiles);
     }
 
     void Update()
@@ -136,7 +136,7 @@ public class WorldTileDragHandler : MonoBehaviour
         }
     }
 
-    void OnReturnAllUncommittedTiles(ReturnAllUncommittedTilesToHolder evt)
+    void OnReturnAllUncommittedTiles(ReturnAllUncommittedTilesToHolderEvent evt)
     {
         if (_selectedTile == null)
         {

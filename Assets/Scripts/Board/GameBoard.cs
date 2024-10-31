@@ -95,7 +95,7 @@ public class GameBoard : MonoBehaviour
 
     private void CalculateAndDisplayWordScores()
     {
-        var tileList = _boardState.GetUncommittedTileIds();
+        var tileList = _boardState.GetAllBoardTileIds();
         var tileVisuals = _boardVisual.GetTileVisualsForIDs(tileList);
 
         BoardDataHelper.DisplayWordScoresForPlacedTiles(_boardState, tileVisuals);

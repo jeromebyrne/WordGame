@@ -21,11 +21,13 @@ public class GameManager : MonoBehaviour
     private void OnEnable()
     {
         GameEventHandler.Instance.Subscribe<UIPlayButtonPressedEvent>(OnAttemptPlayTurn);
+        GameEventHandler.Instance.Subscribe<PassTurnEvent>(OnPassTurnEvent);
     }
 
     private void OnDisable()
     {
         GameEventHandler.Instance.Unsubscribe<UIPlayButtonPressedEvent>(OnAttemptPlayTurn);
+        GameEventHandler.Instance.Unsubscribe<PassTurnEvent>(OnPassTurnEvent);
     }
 
     void Start()
@@ -92,6 +94,19 @@ public class GameManager : MonoBehaviour
         {
             AssignRandomLetterToPlayer(playerState);
         }
+    }
+
+    private void OnPassTurnEvent(PassTurnEvent evt)
+    {
+        PassTurn();
+    }
+
+    private void PassTurn()
+    {
+        // skip the turn (no points)
+        GameEventHandler.Instance.TriggerEvent(ReturnAllUncommittedTilesToHolderEvent.Get(_currentPlayerState.PlayerIndex));
+
+        SwitchToNextPlayerTurn();
     }
 
     private void OnAttemptPlayTurn(UIPlayButtonPressedEvent evt)
@@ -249,10 +264,7 @@ public class GameManager : MonoBehaviour
 
         if (_currentTurnTimeSeconds > kMaxTurnTimeSeconds)
         {
-            // skip the turn (no points)
-            GameEventHandler.Instance.TriggerEvent(ReturnAllUncommittedTilesToHolderEvent.Get(_currentPlayerState.PlayerIndex));
-
-            SwitchToNextPlayerTurn();
+            PassTurn();
         }
     }
 }

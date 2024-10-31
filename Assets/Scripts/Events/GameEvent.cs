@@ -367,3 +367,16 @@ public class DismissMessageBubbleEvent : GameEvent
     {
     }
 }
+
+public class PassTurnEvent : GameEvent
+{
+    public static PassTurnEvent Get()
+    {
+        var evt = Get<PassTurnEvent>();
+        return evt;
+    }
+
+    public override void Reset()
+    {
+    }
+}

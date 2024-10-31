@@ -178,6 +178,24 @@ public class BoardState : IReadOnlyBoardState
         return count;
     }
 
+    public List<uint> GetUncommittedTileIds()
+    {
+        List<uint> tileIds = new List<uint>();
+
+        foreach (var column in _slots)
+        {
+            foreach (var slot in column)
+            {
+                if (slot.IsOccupied && !slot.IsTileCommitted)
+                {
+                    tileIds.Add(slot.OccupiedLetter.UniqueId);
+                }
+            }
+        }
+
+        return tileIds;
+    }
+
     public void UpdateSlotState(BoardSlotIndex index, BoardSlotState slotState)
     {
         if (index.Row >= _slots.Count)

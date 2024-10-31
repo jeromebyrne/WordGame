@@ -30,6 +30,21 @@ public class BoardVisual : MonoBehaviour
         return new Vector3(worldX, worldY, -2.0f); // TODO: cache these positions
     }
 
+    public List<WorldLetterTileVisual> GetTileVisualsForIDs(List<uint> uniqueLetterIds)
+    {
+        List<WorldLetterTileVisual> tileVisuals = new List<WorldLetterTileVisual>();
+
+        foreach (var kvp in _letterTilesSpritesMap)
+        {
+            if (uniqueLetterIds.Contains(kvp.Key))
+            {
+                tileVisuals.Add(kvp.Value.GetComponent<WorldLetterTileVisual>());
+            }
+        }
+
+        return tileVisuals;
+    }
+
     public Bounds VisualBounds
     {
         get { return _boardSprite.bounds; }
@@ -48,6 +63,15 @@ public class BoardVisual : MonoBehaviour
         get
         {
             return _boardSprite.bounds.size.y / _cachedGridDimensions.y;
+        }
+    }
+
+    public void HideAllWordScoreBadges()
+    {
+        foreach (var kvp in _letterTilesSpritesMap)
+        {
+            WorldLetterTileVisual tileVisual = kvp.Value.GetComponent<WorldLetterTileVisual>();
+            tileVisual.HideScoreBadge();
         }
     }
 

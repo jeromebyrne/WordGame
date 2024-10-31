@@ -27,6 +27,33 @@ public static class BoardDataHelper
         return uncommittedTiles;
     }
 
+    public static void DisplayWordScoresForPlacedTiles(IReadOnlyBoardState boardState, List<WorldLetterTileVisual> placedTileObjects)
+    {
+        var placedTiles = GetUncommittedTiles(boardState);
+        var wordsAndScores = GetWordsAndScoresFromTiles(boardState, placedTiles);
+
+        // Hide all score badges initially
+        foreach (var tile in placedTileObjects)
+        {
+            tile.HideScoreBadge();
+        }
+
+        // Display score only on the last tile of each word
+        foreach (var (word, score, wordTiles) in wordsAndScores)
+        {
+            if (wordTiles.Count > 0)
+            {
+                var lastTileIndex = wordTiles[wordTiles.Count - 1];
+                var lastTileObject = placedTileObjects.Find(tile => tile.GridIndex.Equals(lastTileIndex));
+
+                if (lastTileObject != null)
+                {
+                    lastTileObject.DisplayScoreBadge(score);
+                }
+            }
+        }
+    }
+
     public static bool DoWordsShareCommonTile(List<(string word, int score, List<BoardSlotIndex> wordTiles)> wordsAndScores)
     {
         // Use a HashSet to keep track of the tiles in the first word

@@ -93,6 +93,8 @@ public class WorldTileDragHandler : MonoBehaviour
                 _selectedTile = sr.gameObject;
                 _isDragging = true;
 
+                visualComponent.HideScoreBadge();
+
                 GameEventHandler.Instance.TriggerEvent(WorldTileStartDragEvent.Get(visualComponent));
 
                 break;

@@ -107,6 +107,8 @@ public class GameManager : MonoBehaviour
         GameEventHandler.Instance.TriggerEvent(ReturnAllUncommittedTilesToHolderEvent.Get(_currentPlayerState.PlayerIndex));
 
         SwitchToNextPlayerTurn();
+
+        GameEventHandler.Instance.TriggerEvent(PlayAudioEvent.Get("Audio/pass", 1.0f, false, false));
     }
 
     private void OnAttemptPlayTurn(UIPlayButtonPressedEvent evt)

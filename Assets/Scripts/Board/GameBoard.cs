@@ -88,7 +88,17 @@ public class GameBoard : MonoBehaviour
         slotState.IsOccupied = false;
         _boardState.UpdateSlotState(worldTile.GridIndex, slotState);
 
+        CalculateAndDisplayWordScores();
+
         // GameEventHandler.Instance.TriggerEvent(PlayAudioEvent.Get("Audio/select", 0.1f, false, false));
+    }
+
+    private void CalculateAndDisplayWordScores()
+    {
+        var tileList = _boardState.GetUncommittedTileIds();
+        var tileVisuals = _boardVisual.GetTileVisualsForIDs(tileList);
+
+        BoardDataHelper.DisplayWordScoresForPlacedTiles(_boardState, tileVisuals);
     }
 
     private void OnWorldTileEndDrag(WorldTileEndDragEvent evt)
@@ -102,10 +112,13 @@ public class GameBoard : MonoBehaviour
             GameEventHandler.Instance.TriggerEvent(ReturnTileToHolderEvent.Get(evt.LetterTile.PlayerIndex, evt.LetterTile.LetterData.UniqueId));
             _boardVisual.DestroyLetterTile(evt.LetterTile.LetterData.UniqueId);
             GameEventHandler.Instance.TriggerEvent(PlayAudioEvent.Get("Audio/fly", 1.0f, false, false));
+            CalculateAndDisplayWordScores();
             return;
         }
 
         SnapWorldTile(evt.LetterTile.PlayerIndex, evt.LetterTile, worldPos);
+
+        CalculateAndDisplayWordScores();
 
         // play sound effect
         int randomNumber = Random.Range(1, 5);
@@ -156,6 +169,8 @@ public class GameBoard : MonoBehaviour
 
         SnapWorldTile(playerIndex, worldTile, worldPos);
 
+        CalculateAndDisplayWordScores();
+
         GameEventHandler.Instance.TriggerEvent(UITilePlacedonBoardEvent.Get(playerIndex, uiTile));
 
         int randomNumber = Random.Range(1, 5);
@@ -173,6 +188,8 @@ public class GameBoard : MonoBehaviour
             letterIds.Add(slotState.OccupiedLetter.UniqueId);
             _boardState.UpdateSlotState(index, slotState);
         }
+
+        _boardVisual.HideAllWordScoreBadges();
 
         GameEventHandler.Instance.TriggerEvent(TilesCommittedEvent.Get(playerIndex, tilesToCommit, letterIds));
     }

@@ -8,9 +8,10 @@ public class UIPlayerScoreCounter : MonoBehaviour
     [SerializeField] TMP_Text _scoreLabel = null;
     [SerializeField] Color _playerColor;
     [SerializeField] Image _image = null;
+    [SerializeField] Image _caratImage = null;
 
     private Color _inactiveColor = Color.gray;
-    private Vector3 _activeScale = new Vector3(1.25f, 1.25f, 1.0f);
+    private Vector3 _activeScale = new Vector3(1.0f, 1.0f, 1.0f);
 
     private void OnEnable()
     {
@@ -29,6 +30,7 @@ public class UIPlayerScoreCounter : MonoBehaviour
         _scoreLabel.text = "0";
         _image.color = _inactiveColor;
         _playerColor.a = 1.0f;
+        _caratImage.color = _playerColor;
     }
 
     void OnScoreUpdated(PlayerStateUpdatedEvent evt)
@@ -47,11 +49,13 @@ public class UIPlayerScoreCounter : MonoBehaviour
         {
             _image.color = _playerColor;
             _image.transform.localScale = _activeScale;
+            _caratImage.gameObject.SetActive(true);
         }
         else
         {
             _image.color = _inactiveColor;
             _image.transform.localScale = Vector3.one;
+            _caratImage.gameObject.SetActive(false);
         }
     }
 }

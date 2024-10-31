@@ -6,6 +6,8 @@ public class WorldLetterTileVisual : MonoBehaviour
     [SerializeField] private TMP_Text _letterText = null;
     [SerializeField] private TMP_Text _scoreText = null;
     [SerializeField] private SpriteRenderer _spriteRenderer = null;
+    [SerializeField] private GameObject _wordScoreBadge = null;
+    [SerializeField] private TMP_Text _wordScoreLabel = null;
 
     private Color _initColor;
 
@@ -72,5 +74,16 @@ public class WorldLetterTileVisual : MonoBehaviour
                 return;
             }
         }
+    }
+
+    public void DisplayScoreBadge(int score)
+    {
+        _wordScoreBadge.SetActive(true);
+        _wordScoreLabel.text = score.ToString();
+    }
+
+    public void HideScoreBadge()
+    {
+        _wordScoreBadge.SetActive(false);
     }
 }

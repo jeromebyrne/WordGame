@@ -68,6 +68,7 @@ public class UIPassButton : MonoBehaviour
     {
         if (_isCollapsed)
         {
+            // GameEventHandler.Instance.TriggerEvent(PlayAudioEvent.Get("Audio/pass_btn", 1.0f, false, false));
             SetCollapsed(false);
             return;
         }

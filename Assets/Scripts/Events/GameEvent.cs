@@ -380,3 +380,23 @@ public class PassTurnEvent : GameEvent
     {
     }
 }
+
+public class PlayerColorSetEvent : GameEvent
+{
+    public Color PlayerColor { get; private set; }
+    public int PlayerIndex { get; private set; }
+
+    public static PlayerColorSetEvent Get(int playerIndex, Color color)
+    {
+        var evt = Get<PlayerColorSetEvent>();
+        evt.PlayerIndex = playerIndex;
+        evt.PlayerColor = color;
+        return evt;
+    }
+
+    public override void Reset()
+    {
+        PlayerIndex = -1;
+        PlayerColor = Color.white;
+    }
+}

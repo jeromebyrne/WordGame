@@ -6,10 +6,10 @@ public class UIPlayerScoreCounter : MonoBehaviour
 {
     [SerializeField] private int _playerIndex = -1;
     [SerializeField] TMP_Text _scoreLabel = null;
-    [SerializeField] Color _playerColor;
     [SerializeField] Image _image = null;
     [SerializeField] Image _caratImage = null;
 
+    Color _playerColor;
     private Color _inactiveColor = Color.gray;
     private Vector3 _activeScale = new Vector3(1.0f, 1.0f, 1.0f);
 
@@ -17,20 +17,20 @@ public class UIPlayerScoreCounter : MonoBehaviour
     {
         GameEventHandler.Instance.Subscribe<PlayerStateUpdatedEvent>(OnScoreUpdated);
         GameEventHandler.Instance.Subscribe<ConfirmSwitchPlayerEvent>(OnPlayerSwitch);
+        GameEventHandler.Instance.Subscribe<PlayerColorSetEvent>(OnPlayerColorSetEvent);
     }
 
     private void OnDisable()
     {
         GameEventHandler.Instance.Subscribe<PlayerStateUpdatedEvent>(OnScoreUpdated);
         GameEventHandler.Instance.Subscribe<ConfirmSwitchPlayerEvent>(OnPlayerSwitch);
+        GameEventHandler.Instance.Unsubscribe<PlayerColorSetEvent>(OnPlayerColorSetEvent);
     }
 
     void Start()
     {
         _scoreLabel.text = "0";
         _image.color = _inactiveColor;
-        _playerColor.a = 1.0f;
-        _caratImage.color = _playerColor;
     }
 
     void OnScoreUpdated(PlayerStateUpdatedEvent evt)
@@ -57,5 +57,17 @@ public class UIPlayerScoreCounter : MonoBehaviour
             _image.transform.localScale = Vector3.one;
             _caratImage.gameObject.SetActive(false);
         }
+    }
+
+    void OnPlayerColorSetEvent(PlayerColorSetEvent evt)
+    {
+        if (evt.PlayerIndex != _playerIndex)
+        {
+            return;
+        }
+
+        _playerColor = evt.PlayerColor;
+
+        _caratImage.color = _playerColor;
     }
 }

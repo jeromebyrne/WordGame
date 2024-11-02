@@ -1,6 +1,10 @@
 using System.Collections.Generic;
 using UnityEditor.VersionControl;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.ResourceManagement.ResourceProviders;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -11,12 +15,16 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameBoard _gameBoard;
     [SerializeField] private WorldTileDragHandler _worldTileDragHandler;
     [SerializeField] private BoardVisual _boardVisual;
+    [SerializeField] private Color _playerOneColor = Color.red;
+    [SerializeField] private Color _playerTwoColor = Color.green;
 
     private PlayerState _currentPlayerState;
     private const float kMaxTurnTimeSeconds = 120.0f;
     private const float kTurnCountdownTime = 30.0f;
     private float _currentTurnTimeSeconds = 0.0f;
     private bool _hasTriggeredCountdown = false;
+
+    bool _isGameOver = false;
 
     private void OnEnable()
     {
@@ -45,6 +53,12 @@ public class GameManager : MonoBehaviour
         _worldTileDragHandler.Init();
 
         _currentPlayerState = _playerOneState;
+
+        // send a color set event for elements that are colored based on current player
+        // Note: need to send this before ConfirmSwitchPlayerEvent
+        GameEventHandler.Instance.TriggerEvent(PlayerColorSetEvent.Get(1, _playerOneColor));
+        GameEventHandler.Instance.TriggerEvent(PlayerColorSetEvent.Get(2, _playerTwoColor));
+
         GameEventHandler.Instance.TriggerEvent(ConfirmSwitchPlayerEvent.Get(-1, 1));
 
         // play background music
@@ -106,13 +120,30 @@ public class GameManager : MonoBehaviour
         // skip the turn (no points)
         GameEventHandler.Instance.TriggerEvent(ReturnAllUncommittedTilesToHolderEvent.Get(_currentPlayerState.PlayerIndex));
 
-        SwitchToNextPlayerTurn();
-
         GameEventHandler.Instance.TriggerEvent(PlayAudioEvent.Get("Audio/pass", 1.0f, false, false));
+
+        _currentPlayerState.ConsecutivePasses += 1;
+
+        // TODO: if both players have passed twice then end the game
+        if (_playerOneState.ConsecutivePasses > 1 &&
+            _playerTwoState.ConsecutivePasses > 1)
+        {
+            GameOver();
+            return;
+        }
+        else
+        {
+            SwitchToNextPlayerTurn();
+        }
     }
 
     private void OnAttemptPlayTurn(UIPlayButtonPressedEvent evt)
     {
+        if (_isGameOver)
+        {
+            return;
+        }
+
         // check if we can play this turn
         var boardState = _gameBoard.GetBoardState();
 
@@ -225,6 +256,9 @@ public class GameManager : MonoBehaviour
             _currentPlayerState.RemoveLetter(l);
         }
 
+        // reset consecutive passes
+        _currentPlayerState.ConsecutivePasses = 0;
+
         SwitchToNextPlayerTurn();
 
         // play tiles committed successfully sfx
@@ -267,6 +301,25 @@ public class GameManager : MonoBehaviour
         if (_currentTurnTimeSeconds > kMaxTurnTimeSeconds)
         {
             PassTurn();
+        }
+    }
+
+    public void GameOver()
+    {
+        _isGameOver = true;
+
+        Addressables.LoadSceneAsync("Assets/Scenes/GameOverScene.unity", LoadSceneMode.Single).Completed += OnGameOverSceneLoaded;
+    }
+
+    private void OnGameOverSceneLoaded(AsyncOperationHandle<SceneInstance> obj)
+    {
+        if (obj.Status == AsyncOperationStatus.Succeeded)
+        {
+            Debug.Log("Game Over scene loaded successfully!");
+        }
+        else
+        {
+            Debug.LogError("Failed to load scene.");
         }
     }
 }

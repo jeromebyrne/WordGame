@@ -13,6 +13,9 @@ public class PlayerState
 
     public int Score { get; private set; }
 
+    // The number of times the player has passed consecutively
+    public int ConsecutivePasses { get; set; }
+
     List<LetterDataObj> _currentPlayerLetters = new List<LetterDataObj>();
 
     public int CurrentLetterCount { get { return _currentPlayerLetters.Count; } }

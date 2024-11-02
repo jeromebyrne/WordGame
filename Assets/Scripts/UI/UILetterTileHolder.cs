@@ -1,19 +1,21 @@
 using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-
+using UnityEngine.UI;
 using TilePlacementInfo = System.Collections.Generic.List<System.ValueTuple<UnityEngine.Vector2, UnityEngine.GameObject>>;
 
 public class UILetterTileHolder : MonoBehaviour
 {
-    [SerializeField] RectTransform _holderRect;
-    [SerializeField] GameObject _tilePrefab;
+    [SerializeField] RectTransform _holderRect = null;
+    [SerializeField] GameObject _tilePrefab = null;
+    [SerializeField] Image _playerColorElement = null;
 
     Dictionary<int, GameObject> _playersTileParents = null;
 
     // position and if that position is taken 
     Dictionary<int, TilePlacementInfo> _tilePlacementPlayerMap = null;
+
+    Dictionary<int, Color> _playerColors = new Dictionary<int, Color>();
 
     private bool _initialized = false;
 
@@ -44,6 +46,7 @@ public class UILetterTileHolder : MonoBehaviour
         GameEventHandler.Instance.Subscribe<UITilePlacedonBoardEvent>(OnTilePlaced);
         GameEventHandler.Instance.Subscribe<ConfirmSwitchPlayerEvent>(OnPlayerSwitch);
         GameEventHandler.Instance.Subscribe<TilesCommittedEvent>(OnTilesCommitted);
+        GameEventHandler.Instance.Subscribe<PlayerColorSetEvent>(OnPlayerColorSetEvent);
     }
 
     private void OnDisable()
@@ -53,6 +56,7 @@ public class UILetterTileHolder : MonoBehaviour
         GameEventHandler.Instance.Unsubscribe<UITilePlacedonBoardEvent>(OnTilePlaced);
         GameEventHandler.Instance.Unsubscribe<ConfirmSwitchPlayerEvent>(OnPlayerSwitch);
         GameEventHandler.Instance.Unsubscribe<TilesCommittedEvent>(OnTilesCommitted);
+        GameEventHandler.Instance.Unsubscribe<PlayerColorSetEvent>(OnPlayerColorSetEvent);
     }
 
     void CreateTilePositions(int playerIndex)
@@ -204,6 +208,8 @@ public class UILetterTileHolder : MonoBehaviour
         {
             _playersTileParents[switchEvent.NextPlayerIndex].SetActive(true);
         }
+
+        _playerColorElement.color = _playerColors[switchEvent.NextPlayerIndex];
     }
 
     void OnTilesCommitted(TilesCommittedEvent evt)
@@ -245,5 +251,10 @@ public class UILetterTileHolder : MonoBehaviour
         {
             DestroyTile(evt.PlayerIndex, killList[i]);
         }
+    }
+
+    void OnPlayerColorSetEvent(PlayerColorSetEvent evt)
+    {
+        _playerColors.Add(evt.PlayerIndex, evt.PlayerColor);
     }
 }

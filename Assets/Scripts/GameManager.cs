@@ -308,7 +308,7 @@ public class GameManager : MonoBehaviour
     {
         _isGameOver = true;
 
-        Addressables.LoadSceneAsync("Assets/Scenes/GameOverScene.unity", LoadSceneMode.Single).Completed += OnGameOverSceneLoaded;
+        Addressables.LoadSceneAsync("Assets/Scenes/GameOverScene.unity", LoadSceneMode.Additive).Completed += OnGameOverSceneLoaded;
     }
 
     private void OnGameOverSceneLoaded(AsyncOperationHandle<SceneInstance> obj)

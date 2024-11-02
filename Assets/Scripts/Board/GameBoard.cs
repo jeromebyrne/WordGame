@@ -20,7 +20,7 @@ public class GameBoard : MonoBehaviour
         GameEventHandler.Instance.Subscribe<WorldTileStartDragEvent>(OnWorldTileStartDrag);
         GameEventHandler.Instance.Subscribe<WorldTileEndDragEvent>(OnWorldTileEndDrag);
         GameEventHandler.Instance.Subscribe<ReturnAllUncommittedTilesToHolderEvent>(OnReturnAllUncommittedTiles);
-        
+        GameEventHandler.Instance.Subscribe<PassTurnEvent>(OnPassTurn);
     }
 
     private void OnDisable()
@@ -30,6 +30,9 @@ public class GameBoard : MonoBehaviour
         GameEventHandler.Instance.Unsubscribe<WorldTileStartDragEvent>(OnWorldTileStartDrag);
         GameEventHandler.Instance.Unsubscribe<WorldTileEndDragEvent>(OnWorldTileEndDrag);
         GameEventHandler.Instance.Unsubscribe<ReturnAllUncommittedTilesToHolderEvent>(OnReturnAllUncommittedTiles);
+        GameEventHandler.Instance.Subscribe<PassTurnEvent>(OnPassTurn);
+
+
     }
 
     public void Init()
@@ -218,5 +221,10 @@ public class GameBoard : MonoBehaviour
         {
             GameEventHandler.Instance.TriggerEvent(PlayAudioEvent.Get("Audio/fly", 1.0f, false, false));
         }
+    }
+
+    private void OnPassTurn(PassTurnEvent evt)
+    {
+        _boardVisual.HideAllWordScoreBadges();
     }
 }

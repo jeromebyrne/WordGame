@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -8,15 +9,13 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    private PlayerState _playerOneState = new PlayerState(1);
-    private PlayerState _playerTwoState = new PlayerState(2);
+    private List<PlayerState> _playerStates = new List<PlayerState>();
     private LetterBag _letterBag = new LetterBag();
     [SerializeField] private UILetterTileHolder _playerTileHolder;
     [SerializeField] private GameBoard _gameBoard;
     [SerializeField] private WorldTileDragHandler _worldTileDragHandler;
     [SerializeField] private BoardVisual _boardVisual;
-    [SerializeField] private Color _playerOneColor = Color.red;
-    [SerializeField] private Color _playerTwoColor = Color.green;
+    [SerializeField] private List<Color> _playerColors;
 
     private PlayerState _currentPlayerState;
     private const float kMaxTurnTimeSeconds = 120.0f;
@@ -40,6 +39,10 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
+        // add players
+        _playerStates.Add(new PlayerState(1));
+        _playerStates.Add(new PlayerState(2));
+
         _letterBag.AddAllLetters();
 
         _playerTileHolder.Init();
@@ -52,12 +55,14 @@ public class GameManager : MonoBehaviour
 
         _worldTileDragHandler.Init();
 
-        _currentPlayerState = _playerOneState;
+        _currentPlayerState = _playerStates.First();
 
         // send a color set event for elements that are colored based on current player
         // Note: need to send this before ConfirmSwitchPlayerEvent
-        GameEventHandler.Instance.TriggerEvent(PlayerColorSetEvent.Get(1, _playerOneColor));
-        GameEventHandler.Instance.TriggerEvent(PlayerColorSetEvent.Get(2, _playerTwoColor));
+        foreach (PlayerState playerState in _playerStates)
+        {
+            GameEventHandler.Instance.TriggerEvent(PlayerColorSetEvent.Get(playerState.PlayerIndex, _playerColors[playerState.PlayerIndex - 1]));
+        }
 
         GameEventHandler.Instance.TriggerEvent(ConfirmSwitchPlayerEvent.Get(-1, 1));
 
@@ -67,18 +72,14 @@ public class GameManager : MonoBehaviour
 
     void AssignInitialLettersToPlayers()
     {
-        // assumption is 2 players per game
         int numLettersPerPlayer = GameSettingsConfigManager.GameSettings._maxPlayerLetters;
-        for (int i = 0; i < numLettersPerPlayer * 2; i++)
+        int totalLetters = numLettersPerPlayer * _playerStates.Count;
+
+        for (int i = 0; i < totalLetters; i++)
         {
-            if (i % 2 == 0)
-            {
-                AssignRandomLetterToPlayer(_playerOneState);
-            }
-            else
-            {
-                AssignRandomLetterToPlayer(_playerTwoState);
-            }
+            // Assign letter to the player in round-robin fashion
+            PlayerState currentPlayerState = _playerStates[i % _playerStates.Count];
+            AssignRandomLetterToPlayer(currentPlayerState);
         }
     }
 
@@ -124,17 +125,23 @@ public class GameManager : MonoBehaviour
 
         _currentPlayerState.ConsecutivePasses += 1;
 
-        // TODO: if both players have passed twice then end the game
-        if (_playerOneState.ConsecutivePasses > 1 &&
-            _playerTwoState.ConsecutivePasses > 1)
+        bool isGameOver = true;
+        foreach (PlayerState playerState in _playerStates)
+        {
+            if (playerState.ConsecutivePasses < 2)
+            {
+                isGameOver = false;
+                break;
+            }
+        }
+
+        if (isGameOver)
         {
             GameOver();
             return;
         }
-        else
-        {
-            SwitchToNextPlayerTurn();
-        }
+
+        SwitchToNextPlayerTurn();
     }
 
     private void OnAttemptPlayTurn(UIPlayButtonPressedEvent evt)
@@ -267,7 +274,11 @@ public class GameManager : MonoBehaviour
 
     private void SwitchToNextPlayerTurn()
     {
-        PlayerState nextPlayerState = _currentPlayerState.PlayerIndex == 1 ? _playerTwoState : _playerOneState;
+        int playerCount = _playerStates.Count;
+
+        int nextPlayerIndex = _currentPlayerState.PlayerIndex == playerCount ? 1 : _currentPlayerState.PlayerIndex + 1;
+
+        PlayerState nextPlayerState = _playerStates[nextPlayerIndex -1];
         GameEventHandler.Instance.TriggerEvent(ConfirmSwitchPlayerEvent.Get(_currentPlayerState.PlayerIndex, nextPlayerState.PlayerIndex));
 
         AssignFreshLettersToPlayer(nextPlayerState);
@@ -320,6 +331,19 @@ public class GameManager : MonoBehaviour
         else
         {
             Debug.LogError("Failed to load scene.");
+            return;
+
         }
+
+        // Access the root GameObject in the loaded scene
+        Scene gameOverScene = obj.Result.Scene;
+        GameObject[] rootObjects = gameOverScene.GetRootGameObjects();
+
+        // Find the GameOver component in the scene
+        GameOver gameOverComponent = rootObjects
+            .SelectMany(root => root.GetComponentsInChildren<GameOver>())
+            .FirstOrDefault();
+
+        // gameOverComponent.Populate(
     }
 }

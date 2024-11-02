@@ -193,8 +193,11 @@ MonoBehaviour:
   _gameBoard: {fileID: 46494436}
   _worldTileDragHandler: {fileID: 46494440}
   _boardVisual: {fileID: 1483288910}
-  _playerOneColor: {r: 0.05490196, g: 0.7921569, b: 0.07058824, a: 1}
-  _playerTwoColor: {r: 0.30588236, g: 0.65394795, b: 0.8862745, a: 1}
+  _playerColors:
+  - {r: 0.22368245, g: 0.8207547, b: 0.18970275, a: 1}
+  - {r: 0.2325116, g: 0.8172127, b: 0.8962264, a: 1}
+  - {r: 0.8584906, g: 0.41709685, b: 0.41709685, a: 1}
+  - {r: 0.14751692, g: 0.1796817, b: 0.8018868, a: 1}
 --- !u!114 &46494439
 MonoBehaviour:
   m_ObjectHideFlags: 0

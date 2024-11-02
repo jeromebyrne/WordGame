@@ -13,6 +13,10 @@ public class PlayerState
 
     public int Score { get; private set; }
 
+    public int HighestWordScore { get; set; }
+
+    public string HighestScoringWord { get; set; }
+
     // The number of times the player has passed consecutively
     public int ConsecutivePasses { get; set; }
 

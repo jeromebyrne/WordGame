@@ -18,8 +18,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private List<Color> _playerColors;
 
     private PlayerState _currentPlayerState;
-    private const float kMaxTurnTimeSeconds = 120.0f;
-    private const float kTurnCountdownTime = 30.0f;
+    private const float kMaxTurnTimeSeconds = 10.0f;
+    private const float kTurnCountdownTime = 5.0f;
     private float _currentTurnTimeSeconds = 0.0f;
     private bool _hasTriggeredCountdown = false;
 
@@ -254,6 +254,12 @@ public class GameManager : MonoBehaviour
         {
             Debug.Log("Score for " + tup.Item1 + " is: " + tup.Item2.ToString());
 
+            if (tup.Item2 > _currentPlayerState.HighestWordScore)
+            {
+                _currentPlayerState.HighestWordScore = tup.Item2;
+                _currentPlayerState.HighestScoringWord = tup.Item1;
+            }
+
             _currentPlayerState.AddScore(tup.Item2);
         }
 
@@ -299,6 +305,11 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
+        if (_isGameOver)
+        {
+            return;
+        }
+
         if (!_hasTriggeredCountdown && _currentTurnTimeSeconds > (kMaxTurnTimeSeconds - kTurnCountdownTime))
         {
             GameEventHandler.Instance.TriggerEvent(StartTurnCountdownTimerEvent.Get(kTurnCountdownTime));
@@ -311,7 +322,7 @@ public class GameManager : MonoBehaviour
 
         if (_currentTurnTimeSeconds > kMaxTurnTimeSeconds)
         {
-            PassTurn();
+            GameEventHandler.Instance.TriggerEvent(PassTurnEvent.Get());
         }
     }
 
@@ -344,6 +355,6 @@ public class GameManager : MonoBehaviour
             .SelectMany(root => root.GetComponentsInChildren<GameOver>())
             .FirstOrDefault();
 
-        // gameOverComponent.Populate(
+        gameOverComponent.Populate(_playerStates, _playerColors);
     }
 }

@@ -21,6 +21,8 @@ public class UILetterTileHolder : MonoBehaviour
 
     public void Init()
     {
+        Debug.Log($"Instance ID in Init: {GetInstanceID()}");
+
         if (_initialized)
         {
             return;
@@ -30,6 +32,7 @@ public class UILetterTileHolder : MonoBehaviour
         _tilePlacementPlayerMap = new Dictionary<int, TilePlacementInfo>();
 
         // hardcoding 2 players for right now
+        // TODO: listen for players added events from GameManager
         CreateTilePositions(1);
         CreateTilePositions(2);
 
@@ -37,6 +40,10 @@ public class UILetterTileHolder : MonoBehaviour
         _playersTileParents[2].SetActive(false);
 
         _initialized = true;
+
+        // Verify initialization
+        Debug.Log($"_playersTileParents[1]: {_playersTileParents[1]}");
+        Debug.Log($"_playersTileParents[2]: {_playersTileParents[2]}");
     }
 
     private void OnEnable()
@@ -94,6 +101,8 @@ public class UILetterTileHolder : MonoBehaviour
 
     private GameObject CreateTile(LetterDataObj letterInfo, int playerIndex)
     {
+        Debug.Log($"Instance ID in CreateTile: {GetInstanceID()}");
+
         GameObject newInstance = Instantiate(_tilePrefab, _playersTileParents[playerIndex].transform);
 
         UILetterTile ltComponent = newInstance.GetComponent<UILetterTile>();

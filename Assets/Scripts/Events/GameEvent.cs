@@ -413,3 +413,16 @@ public class GameOverEvent : GameEvent
     {
     }
 }
+
+public class RestartGameEvent : GameEvent
+{
+    public static RestartGameEvent Get()
+    {
+        var evt = Get<RestartGameEvent>();
+        return evt;
+    }
+
+    public override void Reset()
+    {
+    }
+}

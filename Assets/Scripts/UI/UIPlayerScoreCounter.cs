@@ -22,8 +22,8 @@ public class UIPlayerScoreCounter : MonoBehaviour
 
     private void OnDisable()
     {
-        GameEventHandler.Instance.Subscribe<PlayerStateUpdatedEvent>(OnScoreUpdated);
-        GameEventHandler.Instance.Subscribe<ConfirmSwitchPlayerEvent>(OnPlayerSwitch);
+        GameEventHandler.Instance.Unsubscribe<PlayerStateUpdatedEvent>(OnScoreUpdated);
+        GameEventHandler.Instance.Unsubscribe<ConfirmSwitchPlayerEvent>(OnPlayerSwitch);
         GameEventHandler.Instance.Unsubscribe<PlayerColorSetEvent>(OnPlayerColorSetEvent);
     }
 

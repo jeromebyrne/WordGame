@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -12,11 +11,6 @@ public class GameOver : MonoBehaviour
     [SerializeField] GameObject _bestWordObject;
     [SerializeField] TMP_Text _bestWordLabel;
     [SerializeField] TMP_Text _bestWordPlayerLabel;
-
-    public void OnNewGameButtonPressed()
-    {
-
-    }
 
     public void Populate(List<PlayerState> playerStates, List<Color> playerColors)
     {
@@ -77,5 +71,10 @@ public class GameOver : MonoBehaviour
             _bestWordPlayerLabel.text = "Player " + bestWordPlayerIndex;
             _bestWordPlayerLabel.color = playerColors[bestWordPlayerIndex - 1];
         }
+    }
+
+    public void OnNewGameButtonPressed()
+    {
+        GameEventHandler.Instance.TriggerEvent(RestartGameEvent.Get());
     }
 }

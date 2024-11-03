@@ -14,6 +14,9 @@ public class GameInit : MonoBehaviour
 
     private void Awake()
     {
+        GameSettingsConfigManager.Reset();
+        WordConfigManager.Reset();
+
         GameSettingsConfigManager.Initialize(_gameSettingsAddress);
         WordConfigManager.Initialize(_letterConfigAddress, _wordFileAddress);
     }

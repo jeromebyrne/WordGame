@@ -29,6 +29,13 @@ public static class WordConfigManager
         Addressables.LoadAssetAsync<TextAsset>(wordFileAddress).Completed += OnWordFileLoaded;
     }
 
+    public static void Reset()
+    {
+        IsInitialized = false;
+        _letterConfig = null;
+        _wordSet = null;
+    }
+
     private static void OnWordFileLoaded(AsyncOperationHandle<TextAsset> handle)
     {
         if (handle.Status == AsyncOperationStatus.Succeeded)

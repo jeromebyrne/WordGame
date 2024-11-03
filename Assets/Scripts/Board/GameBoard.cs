@@ -30,7 +30,7 @@ public class GameBoard : MonoBehaviour
         GameEventHandler.Instance.Unsubscribe<WorldTileStartDragEvent>(OnWorldTileStartDrag);
         GameEventHandler.Instance.Unsubscribe<WorldTileEndDragEvent>(OnWorldTileEndDrag);
         GameEventHandler.Instance.Unsubscribe<ReturnAllUncommittedTilesToHolderEvent>(OnReturnAllUncommittedTiles);
-        GameEventHandler.Instance.Subscribe<PassTurnEvent>(OnPassTurn);
+        GameEventHandler.Instance.Unsubscribe<PassTurnEvent>(OnPassTurn);
 
 
     }

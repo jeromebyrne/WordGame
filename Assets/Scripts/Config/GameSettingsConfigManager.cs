@@ -19,6 +19,12 @@ public static class GameSettingsConfigManager
         }
     }
 
+    public static void Reset()
+    {
+        IsInitialized = false;
+        _gameSettings = null;
+    }
+
     public static void Initialize(string address)
     {
         if (IsInitialized) return;

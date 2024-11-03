@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -30,6 +29,7 @@ public class GameManager : MonoBehaviour
         GameEventHandler.Instance.Subscribe<UIPlayButtonPressedEvent>(OnAttemptPlayTurn);
         GameEventHandler.Instance.Subscribe<PassTurnEvent>(OnPassTurnEvent);
         GameEventHandler.Instance.Subscribe<GameOverEvent>(OnGameOverEvent);
+        GameEventHandler.Instance.Subscribe<RestartGameEvent>(OnRestartGameEvent);
     }
 
     private void OnDisable()
@@ -37,6 +37,7 @@ public class GameManager : MonoBehaviour
         GameEventHandler.Instance.Unsubscribe<UIPlayButtonPressedEvent>(OnAttemptPlayTurn);
         GameEventHandler.Instance.Unsubscribe<PassTurnEvent>(OnPassTurnEvent);
         GameEventHandler.Instance.Unsubscribe<GameOverEvent>(OnGameOverEvent);
+        GameEventHandler.Instance.Unsubscribe<RestartGameEvent>(OnRestartGameEvent);
     }
 
     void Start()
@@ -375,5 +376,17 @@ public class GameManager : MonoBehaviour
         }
 
         GameOver();
+    }
+
+    private void OnRestartGameEvent(RestartGameEvent evt)
+    {
+        if (!_isGameOver)
+        {
+            // we shouldn't be trying to restart a game if the current game is not over
+            return;
+        }
+
+        // TODO: do we want a callback?
+        Addressables.LoadSceneAsync("Assets/Scenes/GameStart.unity", LoadSceneMode.Single);
     }
 }

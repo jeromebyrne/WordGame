@@ -102,3 +102,4 @@ crashlytics.log
 *.swp
 *.un~
 words.txt
+words.txt.meta

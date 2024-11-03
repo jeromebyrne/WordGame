@@ -5,7 +5,7 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 public static class GameSettingsConfigManager
 {
     private static GameSettingsConfig _gameSettings;
-    public static bool IsInitialized { get; private set; }
+    public static bool IsInitialized { get; private set; } = false;
 
     public static GameSettingsConfig GameSettings
     {

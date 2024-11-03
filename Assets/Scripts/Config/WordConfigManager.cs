@@ -6,7 +6,7 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 public static class WordConfigManager
 {
     private static LetterConfig _letterConfig;
-    public static bool IsInitialized { get; private set; }
+    public static bool IsInitialized { get; private set; } = false;
     private static HashSet<string> _wordSet;
 
     public static LetterConfig LetterConfig

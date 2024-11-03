@@ -11,6 +11,8 @@ public class CameraSetup : MonoBehaviour
 
     void AdjustView()
     {
+        Debug.Log("Calling AdjustView() in CameraSetup");
+
         Vector2 baseResolution = GameSettingsConfigManager.GameSettings._baseScreenResolution;
 
         float targetAspect = baseResolution.x / baseResolution.y;

@@ -340,12 +340,12 @@ public class GameManager : MonoBehaviour
     {
         _isGameOver = true;
 
-        Addressables.LoadSceneAsync("Assets/Scenes/GameOverScene.unity", LoadSceneMode.Additive).Completed += OnGameOverSceneLoaded;
+        SceneManager.LoadSceneAsync("Assets/Scenes/GameOverScene.unity", LoadSceneMode.Additive).completed += OnGameOverSceneLoaded;
     }
 
-    private void OnGameOverSceneLoaded(AsyncOperationHandle<SceneInstance> obj)
+    private void OnGameOverSceneLoaded(AsyncOperation obj)
     {
-        if (obj.Status == AsyncOperationStatus.Succeeded)
+        if (obj.isDone)
         {
             Debug.Log("Game Over scene loaded successfully!");
         }
@@ -353,19 +353,32 @@ public class GameManager : MonoBehaviour
         {
             Debug.LogError("Failed to load scene.");
             return;
-
         }
 
-        // Access the root GameObject in the loaded scene
-        Scene gameOverScene = obj.Result.Scene;
-        GameObject[] rootObjects = gameOverScene.GetRootGameObjects();
+        // Access the loaded scene by name
+        Scene gameOverScene = SceneManager.GetSceneByName("GameOverScene"); // Replace with your actual scene name
+        if (gameOverScene.isLoaded)
+        {
+            GameObject[] rootObjects = gameOverScene.GetRootGameObjects();
 
-        // Find the GameOver component in the scene
-        GameOver gameOverComponent = rootObjects
-            .SelectMany(root => root.GetComponentsInChildren<GameOver>())
-            .FirstOrDefault();
+            // Find the GameOver component in the scene
+            GameOver gameOverComponent = rootObjects
+                .SelectMany(root => root.GetComponentsInChildren<GameOver>())
+                .FirstOrDefault();
 
-        gameOverComponent.Populate(_playerStates, _playerColors);
+            if (gameOverComponent != null)
+            {
+                gameOverComponent.Populate(_playerStates, _playerColors);
+            }
+            else
+            {
+                Debug.LogError("GameOver component not found in the loaded scene.");
+            }
+        }
+        else
+        {
+            Debug.LogError("GameOver scene is not loaded.");
+        }
     }
 
     private void OnGameOverEvent(GameOverEvent evt)
@@ -387,6 +400,6 @@ public class GameManager : MonoBehaviour
         }
 
         // TODO: do we want a callback?
-        Addressables.LoadSceneAsync("Assets/Scenes/GameStart.unity", LoadSceneMode.Single);
+        SceneManager.LoadSceneAsync("Assets/Scenes/GameStart.unity", LoadSceneMode.Single);
     }
 }

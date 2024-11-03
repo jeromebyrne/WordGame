@@ -9,7 +9,7 @@ public class UIPlayerScoreCounter : MonoBehaviour
     [SerializeField] Image _image = null;
     [SerializeField] Image _caratImage = null;
 
-    Color _playerColor;
+    Color _playerColor = Color.green;
     private Color _inactiveColor = Color.gray;
     private Vector3 _activeScale = new Vector3(1.0f, 1.0f, 1.0f);
 
@@ -27,7 +27,7 @@ public class UIPlayerScoreCounter : MonoBehaviour
         GameEventHandler.Instance.Unsubscribe<PlayerColorSetEvent>(OnPlayerColorSetEvent);
     }
 
-    void Start()
+    private void Awake()
     {
         _scoreLabel.text = "0";
         _image.color = _inactiveColor;
@@ -67,7 +67,7 @@ public class UIPlayerScoreCounter : MonoBehaviour
         }
 
         _playerColor = evt.PlayerColor;
-
+        _image.color = _playerColor;
         _caratImage.color = _playerColor;
     }
 }

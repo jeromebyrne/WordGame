@@ -65,12 +65,6 @@ public static class WordConfigManager
 
     public static bool IsValidWord(string word)
     {
-        if (word.Length < 2)
-        {
-            Debug.Log("Word must be at least 2 letters long");
-            return false;
-        }
-
         return _wordSet.Contains(word.ToLower());
     }
 }

@@ -18,8 +18,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private List<Color> _playerColors;
 
     private PlayerState _currentPlayerState;
-    private const float kMaxTurnTimeSeconds = 10.0f;
-    private const float kTurnCountdownTime = 5.0f;
+    private const float kMaxTurnTimeSeconds = 90.0f;
+    private const float kTurnCountdownTime = 30.0f;
     private float _currentTurnTimeSeconds = 0.0f;
     private bool _hasTriggeredCountdown = false;
 
@@ -29,12 +29,14 @@ public class GameManager : MonoBehaviour
     {
         GameEventHandler.Instance.Subscribe<UIPlayButtonPressedEvent>(OnAttemptPlayTurn);
         GameEventHandler.Instance.Subscribe<PassTurnEvent>(OnPassTurnEvent);
+        GameEventHandler.Instance.Subscribe<GameOverEvent>(OnGameOverEvent);
     }
 
     private void OnDisable()
     {
         GameEventHandler.Instance.Unsubscribe<UIPlayButtonPressedEvent>(OnAttemptPlayTurn);
         GameEventHandler.Instance.Unsubscribe<PassTurnEvent>(OnPassTurnEvent);
+        GameEventHandler.Instance.Unsubscribe<GameOverEvent>(OnGameOverEvent);
     }
 
     void Start()
@@ -137,7 +139,7 @@ public class GameManager : MonoBehaviour
 
         if (isGameOver)
         {
-            GameOver();
+            GameEventHandler.Instance.TriggerEvent(GameOverEvent.Get());
             return;
         }
 
@@ -289,13 +291,20 @@ public class GameManager : MonoBehaviour
 
         AssignFreshLettersToPlayer(nextPlayerState);
 
-        _currentPlayerState = nextPlayerState;
-
         // stop the countdown if it's active
         _currentTurnTimeSeconds = 0.0f;
         _hasTriggeredCountdown = false;
         GameEventHandler.Instance.TriggerEvent(StopTurnCountdownTimerEvent.Get());
         GameEventHandler.Instance.TriggerEvent(StopAudioEvent.Get("Audio/clock"));
+
+        if (nextPlayerState.CurrentLetterCount < 1)
+        {
+            // a player has no tiles left, this means game over
+            GameEventHandler.Instance.TriggerEvent(GameOverEvent.Get());
+            return;
+        }
+
+        _currentPlayerState = nextPlayerState;
     }
 
     private void PlayErrorAudio()
@@ -326,7 +335,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void GameOver()
+    private void GameOver()
     {
         _isGameOver = true;
 
@@ -356,5 +365,15 @@ public class GameManager : MonoBehaviour
             .FirstOrDefault();
 
         gameOverComponent.Populate(_playerStates, _playerColors);
+    }
+
+    private void OnGameOverEvent(GameOverEvent evt)
+    {
+        if (_isGameOver)
+        {
+            return;
+        }
+
+        GameOver();
     }
 }

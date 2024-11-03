@@ -400,3 +400,16 @@ public class PlayerColorSetEvent : GameEvent
         PlayerColor = Color.white;
     }
 }
+
+public class GameOverEvent : GameEvent
+{
+    public static GameOverEvent Get()
+    {
+        var evt = Get<GameOverEvent>();
+        return evt;
+    }
+
+    public override void Reset()
+    {
+    }
+}

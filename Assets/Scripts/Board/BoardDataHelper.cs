@@ -216,26 +216,32 @@ public static class BoardDataHelper
         return neighbors;
     }
 
-    public static bool AreTilesContiguous(List<BoardSlotIndex> uncommittedTiles, IReadOnlyBoardState boardState, out List<BoardSlotIndex> contiguousTiles)
+    public static Tuple<bool, string> AreTilesContiguous(List<BoardSlotIndex> uncommittedTiles,
+                                                        IReadOnlyBoardState boardState,
+                                                        out List<BoardSlotIndex> contiguousTiles)
     {
         contiguousTiles = new List<BoardSlotIndex>();
 
         if (uncommittedTiles.Count == 0)
-            return false;
+        {
+            return new Tuple<bool, string>(false, "No tiles provided.");
+        }
 
         bool isFirstTurn = boardState.GetCommittedTileCount() == 0;
 
         // Check if this is the first turn where only placed tiles need to be contiguous
         if (isFirstTurn)
         {
-            return AreTilesConnectedWithin(uncommittedTiles, boardState, out contiguousTiles);
+            if (AreTilesConnectedWithin(uncommittedTiles, boardState, out contiguousTiles))
+                return new Tuple<bool, string>(true, string.Empty);
+            else
+                return new Tuple<bool, string>(false, "Tiles are not connected for the first turn.");
         }
 
         // Step 1: Ensure all placed tiles form a single interconnected group (horizontal or vertical)
         if (!AreTilesInSingleLineOrConnected(uncommittedTiles, boardState))
         {
-            Debug.Log("Tiles must form a single line or connect through a shared tile.");
-            return false;
+            return new Tuple<bool, string>(false, "Tiles must form a single line or connect through a shared tile.");
         }
 
         // Step 2: Ensure connection to any existing committed tile
@@ -247,12 +253,18 @@ public static class BoardDataHelper
 
         if (!connectsToCommittedTile)
         {
-            Debug.Log("Placed tiles must connect with at least one committed tile.");
-            return false;
+            return new Tuple<bool, string>(false, "Newly placed tiles must connect with at least one previously placed tile.");
         }
 
         // Step 3: Verify that all uncommitted tiles are connected to form a contiguous group.
-        return AreTilesConnectedWithin(uncommittedTiles, boardState, out contiguousTiles);
+        if (AreTilesConnectedWithin(uncommittedTiles, boardState, out contiguousTiles))
+        {
+            return new Tuple<bool, string>(true, string.Empty);
+        }
+        else
+        {
+            return new Tuple<bool, string>(false, "Tiles are not contiguous.");
+        }
     }
 
     // Check if tiles form a single line or are connected through shared letters

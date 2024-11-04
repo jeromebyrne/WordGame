@@ -1,9 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
-using UnityEngine.ResourceManagement.AsyncOperations;
-using UnityEngine.ResourceManagement.ResourceProviders;
 using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
@@ -169,15 +166,13 @@ public class GameManager : MonoBehaviour
 
         List<BoardSlotIndex> contiguousTiles = new List<BoardSlotIndex>();
 
-        if (!BoardDataHelper.AreTilesContiguous(uncommittedTiles, boardState, out contiguousTiles))
+        var contigTuple = BoardDataHelper.AreTilesContiguous(uncommittedTiles, boardState, out contiguousTiles);
+        if (!contigTuple.Item1)
         {
-            string message = "Letter tiles must be placed contiguously, vertically or horizontally";
-            GameEventHandler.Instance.TriggerEvent(DisplayMessageBubbleEvent.Get(message));
+            GameEventHandler.Instance.TriggerEvent(DisplayMessageBubbleEvent.Get(contigTuple.Item2));
             PlayErrorAudio();
             return;
         }
-
-        Debug.Log("Placed tiles are contiguous!");
 
         // if there are 0 committed tiles it means it's the first turn
         bool firstTurn = boardState.GetCommittedTileCount() == 0;
@@ -204,6 +199,7 @@ public class GameManager : MonoBehaviour
         else
         {
             // make sure newly placed tiles touch previously placed tiles
+            // TODO: I don't think I need this check anymore
             bool connecting = BoardDataHelper.ArePlacedTilesConnectingWithCommittedTile(boardState, uncommittedTiles);
             if (!connecting)
             {

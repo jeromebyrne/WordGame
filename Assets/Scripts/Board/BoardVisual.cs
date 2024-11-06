@@ -12,7 +12,7 @@ public class BoardVisual : MonoBehaviour
     // the int is the letter id
     private Dictionary<uint, SpriteRenderer> _letterTilesSpritesMap = new Dictionary<uint, SpriteRenderer>(); 
 
-    private Vector2Int _cachedGridDimensions;
+    private BoardSlotIndex _cachedGridDimensions;
 
     public Dictionary<uint, SpriteRenderer> GetTilesSpriteRenderers() { return _letterTilesSpritesMap; }
 
@@ -55,7 +55,7 @@ public class BoardVisual : MonoBehaviour
     {
         get
         {
-            return _boardSprite.bounds.size.x / _cachedGridDimensions.x;
+            return _boardSprite.bounds.size.x / _cachedGridDimensions.Column;
         }
     }
 
@@ -63,7 +63,7 @@ public class BoardVisual : MonoBehaviour
     {
         get
         {
-            return _boardSprite.bounds.size.y / _cachedGridDimensions.y;
+            return _boardSprite.bounds.size.y / _cachedGridDimensions.Row;
         }
     }
 
@@ -76,7 +76,7 @@ public class BoardVisual : MonoBehaviour
         }
     }
 
-    public void SetGridDimensions(Vector2Int dimensions)
+    public void SetGridDimensions(BoardSlotIndex dimensions)
     {
         Debug.Assert(_boardSprite != null, "_boardSprite is null. Returning.");
 
@@ -87,9 +87,10 @@ public class BoardVisual : MonoBehaviour
             return;
         }
 
-        _boardSprite.size = dimensions;
+        var vec2Dimensions = dimensions.ToVector2Int();
+        _boardSprite.size = vec2Dimensions;
 
-        Vector2 frameDimensions = dimensions;
+        Vector2 frameDimensions = vec2Dimensions;
         frameDimensions.x += 1.0f;
         frameDimensions.y += 1.0f;
 
@@ -130,8 +131,9 @@ public class BoardVisual : MonoBehaviour
 
     public BoardSlotIndex GetNearestSlotIndex(Vector3 worldPosition)
     {
-        int rows = GameSettingsConfigManager.GameSettings._boardDimensions.x;
-        int columns = GameSettingsConfigManager.GameSettings._boardDimensions.y;
+        var boardDimensions = PlayerSettings.GetBoardDimensions();
+        int rows = boardDimensions.Row;
+        int columns = boardDimensions.Column;
 
         Bounds spriteBounds = _boardSprite.bounds;
 

@@ -9,9 +9,9 @@ public static class BoardDataHelper
     {
         List<BoardSlotIndex> uncommittedTiles = new List<BoardSlotIndex>();
 
-        for (int row = 0; row < boardState.Dimensions.y; row++)
+        for (int row = 0; row < boardState.Dimensions.Row; row++)
         {
-            for (int column = 0; column < boardState.Dimensions.x; column++)
+            for (int column = 0; column < boardState.Dimensions.Column; column++)
             {
                 BoardSlotIndex index;
                 index.Row = row;
@@ -191,8 +191,8 @@ public static class BoardDataHelper
         var connectedTiles = new List<BoardSlotIndex>();
         var nextTile = new BoardSlotIndex { Column = startTile.Column + dx, Row = startTile.Row + dy };
 
-        while (nextTile.Column >= 0 && nextTile.Column < boardState.Dimensions.x &&
-               nextTile.Row >= 0 && nextTile.Row < boardState.Dimensions.y)
+        while (nextTile.Column >= 0 && nextTile.Column < boardState.Dimensions.Column &&
+               nextTile.Row >= 0 && nextTile.Row < boardState.Dimensions.Row)
         {
             var slotState = boardState.GetSlotState(nextTile);
             if (!slotState.IsOccupied) break;
@@ -204,14 +204,14 @@ public static class BoardDataHelper
         return connectedTiles;
     }
 
-    private static List<BoardSlotIndex> GetNeighboringIndices(BoardSlotIndex index, Vector2Int boardDimensions)
+    private static List<BoardSlotIndex> GetNeighboringIndices(BoardSlotIndex index, BoardSlotIndex boardDimensions)
     {
         var neighbors = new List<BoardSlotIndex>();
 
         if (index.Row > 0) neighbors.Add(new BoardSlotIndex { Row = index.Row - 1, Column = index.Column });
-        if (index.Row < boardDimensions.y - 1) neighbors.Add(new BoardSlotIndex { Row = index.Row + 1, Column = index.Column });
+        if (index.Row < boardDimensions.Row - 1) neighbors.Add(new BoardSlotIndex { Row = index.Row + 1, Column = index.Column });
         if (index.Column > 0) neighbors.Add(new BoardSlotIndex { Row = index.Row, Column = index.Column - 1 });
-        if (index.Column < boardDimensions.x - 1) neighbors.Add(new BoardSlotIndex { Row = index.Row, Column = index.Column + 1 });
+        if (index.Column < boardDimensions.Column - 1) neighbors.Add(new BoardSlotIndex { Row = index.Row, Column = index.Column + 1 });
 
         return neighbors;
     }
@@ -372,8 +372,8 @@ public static class BoardDataHelper
         float nearestDistance = float.MaxValue;
 
         // current slot is occupied, so search neighbors
-        int totalRows = boardState.Dimensions.x;
-        int totalColumns = boardState.Dimensions.y;
+        int totalRows = boardState.Dimensions.Column;
+        int totalColumns = boardState.Dimensions.Row;
 
         for (int searchRadius = 1; searchRadius < Mathf.Max(totalRows, totalColumns); searchRadius++)
         {

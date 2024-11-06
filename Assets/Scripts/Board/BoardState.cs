@@ -20,10 +20,16 @@ public struct BoardSlotState
     public TileBonusType BonusType { get; private set; }
 }
 
+[System.Serializable]
 public struct BoardSlotIndex
 {
     public int Column;
     public int Row;
+
+    public Vector2Int ToVector2Int()
+    {
+        return new Vector2Int(Column, Row);
+    }
 
     public static bool operator ==(BoardSlotIndex lhs, BoardSlotIndex rhs)
     {
@@ -70,7 +76,7 @@ public enum TileBonusType
 
 public interface IReadOnlyBoardState
 {
-    Vector2Int Dimensions { get; }
+    BoardSlotIndex Dimensions { get; }
     BoardSlotState GetSlotState(BoardSlotIndex index);
     int GetCommittedTileCount();
     bool IsCenterTileOccupied(); // on the first turn, the center tile should be occupied
@@ -83,16 +89,16 @@ public class BoardState : IReadOnlyBoardState
 
     private BoardState() { }
 
-    public Vector2Int Dimensions { get; private set; }
+    public BoardSlotIndex Dimensions { get; private set; }
 
-    public BoardState(Vector2Int dimensions)
+    public BoardState(BoardSlotIndex dimensions)
     {
         Dimensions = dimensions;
 
-        for (int column = 0; column < dimensions.x; column++)
+        for (int column = 0; column < dimensions.Column; column++)
         {
             _slots.Add(new List<BoardSlotState>());
-            for (int row = 0; row < dimensions.y; row++)
+            for (int row = 0; row < dimensions.Row; row++)
             {
                 BoardSlotState slotState = new BoardSlotState(false, new BoardSlotIndex { Row = row, Column = column }, false, GetTileBonusForIndex(row, column));
                 _slots[column].Add(slotState);
@@ -108,8 +114,8 @@ public class BoardState : IReadOnlyBoardState
 
     private TileBonusType GetTileBonusForIndex(int row, int column)
     {
-        int maxRow = Dimensions.y - 1;
-        int maxColumn = Dimensions.x - 1;
+        int maxRow = Dimensions.Row - 1;
+        int maxColumn = Dimensions.Column - 1;
 
         if (row == maxRow / 2 && column == maxColumn / 2)
         {

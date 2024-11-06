@@ -4,6 +4,6 @@ using UnityEngine;
 public class GameSettingsConfig : ScriptableObject
 {
     public Vector2Int _baseScreenResolution;
-    public Vector2Int _boardDimensions;
+    public BoardSlotIndex _defaultBoardDimensions;
     public int _maxPlayerLetters = 7;
 }

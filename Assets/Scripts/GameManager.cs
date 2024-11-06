@@ -48,7 +48,7 @@ public class GameManager : MonoBehaviour
         _playerTileHolder.Init();
         AssignInitialLettersToPlayers();
 
-        var boardDimensions = GameSettingsConfigManager.GameSettings._boardDimensions;
+        var boardDimensions = PlayerSettings.GetBoardDimensions();
         _boardVisual.SetGridDimensions(boardDimensions);
 
         _gameBoard.Init();

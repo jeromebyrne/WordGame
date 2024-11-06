@@ -50,16 +50,16 @@ public static class GameSettingsConfigManager
     private static void ValidateBoardDimensions()
     {
         // the dimensions must be odd numbers so that there is a center tile to start from
-        if (GameSettings._boardDimensions.x % 2 == 0)
+        if (GameSettings._defaultBoardDimensions.Column % 2 == 0)
         {
-            Debug.LogError("Grid dimensions width has even number");
-            GameSettings._boardDimensions.x -= 1;
+            Debug.LogError("Grid dimensions column has even number");
+            GameSettings._defaultBoardDimensions.Column -= 1;
         }
 
-        if (GameSettings._boardDimensions.y % 2 == 0)
+        if (GameSettings._defaultBoardDimensions.Row % 2 == 0)
         {
-            Debug.LogError("Grid dimensions height has even number");
-            GameSettings._boardDimensions.y -= 1;
+            Debug.LogError("Grid dimensions row has even number");
+            GameSettings._defaultBoardDimensions.Row -= 1;
         }
     }
 }

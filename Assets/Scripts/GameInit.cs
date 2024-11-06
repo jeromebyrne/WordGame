@@ -32,21 +32,21 @@ public class GameInit : MonoBehaviour
             WordConfigManager.IsInitialized)
         {
             Debug.Log("GameSettingsConfigManager and WordConfigManager should both be initialized");
-            LoadMainScene();
+            LoadSetupScene();
             _hasStartedLoadingMainScene = true;
         }
     }
 
-    public void LoadMainScene()
+    public void LoadSetupScene()
     {
-        SceneManager.LoadSceneAsync("Assets/Scenes/MainScene.unity", LoadSceneMode.Single).completed += OnMainSceneLoaded;
+        SceneManager.LoadSceneAsync("Assets/Scenes/GameSetupScene.unity", LoadSceneMode.Single).completed += OnSetupSceneLoaded;
     }
 
-    private void OnMainSceneLoaded(AsyncOperation obj)
+    private void OnSetupSceneLoaded(AsyncOperation obj)
     {
         if (obj.isDone)
         {
-            Debug.Log("Main Scene loaded successfully!");
+            Debug.Log("Setup Scene loaded successfully!");
         }
         else
         {

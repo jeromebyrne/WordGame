@@ -21,7 +21,7 @@ public class CameraSetup : MonoBehaviour
         // Calculate the orthographic size to ensure it always fits the height
         float scaleHeight = windowAspect / targetAspect;
 
-        float scaleOverride = 0.00095f * GameSettingsConfigManager.GameSettings._boardDimensions.x;
+        float scaleOverride = 0.00095f * PlayerSettings.GetBoardDimensions().Column;
 
         if (scaleHeight >= 1.0f)
         {

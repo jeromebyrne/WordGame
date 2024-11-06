@@ -13,5 +13,7 @@ MonoBehaviour:
   m_Name: GameSettingsConfig
   m_EditorClassIdentifier: 
   _baseScreenResolution: {x: 1080, y: 1920}
-  _boardDimensions: {x: 13, y: 13}
+  _defaultBoardDimensions:
+    Column: 11
+    Row: 11
   _maxPlayerLetters: 7

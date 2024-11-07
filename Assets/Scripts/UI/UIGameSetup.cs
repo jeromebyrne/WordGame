@@ -7,12 +7,39 @@ using UnityEngine.UI;
 public class UIGameSetup : MonoBehaviour
 {
     [SerializeField] TMP_Dropdown _gridSizeDropDown = null;
+    [SerializeField] TMP_Dropdown _gameTypeDropDown = null;
+    [SerializeField] TMP_InputField _player1NameInput = null;
+    [SerializeField] TMP_InputField _player2NameInput = null;
 
     bool _loadingMainScene = false;
 
     private void Start()
     {
+        PopulatePlayerNames();
+
+        PopulateGameTypeDropdown();
+
         PopulateGridSizeDropdown();
+    }
+
+    void PopulatePlayerNames()
+    {
+        string player1name = PlayerSettings.GetPlayerName(1);
+        string player2name = PlayerSettings.GetPlayerName(2);
+
+        _player1NameInput.text = player1name;
+        _player2NameInput.text = player2name;
+    }
+
+    void PopulateGameTypeDropdown()
+    {
+        _gameTypeDropDown.ClearOptions();
+
+        List<string> options = new List<string> { "2 Player (offline - same device)" };
+
+        _gameTypeDropDown.AddOptions(options);
+
+        _gameTypeDropDown.value = 0;
     }
 
     void PopulateGridSizeDropdown()
@@ -41,7 +68,7 @@ public class UIGameSetup : MonoBehaviour
             currentIndex++;
         }
 
-        _gridSizeDropDown.value = defaultIndex == -1 ? 2 : defaultIndex;
+        _gridSizeDropDown.value = defaultIndex == -1 ? 1 : defaultIndex;
     }
 
     public void OnContinueButtonPressed()
@@ -74,6 +101,12 @@ public class UIGameSetup : MonoBehaviour
         {
             Debug.LogError("Failed to parse dimensions from the option text.");
         }
+
+        // Set player name
+        string p1name = _player1NameInput.text == "" ? "Player 1" : _player1NameInput.text;
+        string p2name = _player2NameInput.text == "" ? "Player 2" : _player2NameInput.text;
+        PlayerSettings.SetPlayerName(1, p1name);
+        PlayerSettings.SetPlayerName(2, p2name);
     }
 
     public void LoadMainScene()

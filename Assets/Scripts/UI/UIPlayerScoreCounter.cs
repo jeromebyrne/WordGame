@@ -6,6 +6,7 @@ public class UIPlayerScoreCounter : MonoBehaviour
 {
     [SerializeField] private int _playerIndex = -1;
     [SerializeField] TMP_Text _scoreLabel = null;
+    [SerializeField] TMP_Text _playerNameLabel = null;
     [SerializeField] Image _image = null;
     [SerializeField] Image _caratImage = null;
 
@@ -31,6 +32,7 @@ public class UIPlayerScoreCounter : MonoBehaviour
     {
         _scoreLabel.text = "0";
         _image.color = _inactiveColor;
+        _playerNameLabel.text = PlayerSettings.GetPlayerName(_playerIndex);
     }
 
     void OnScoreUpdated(PlayerStateUpdatedEvent evt)

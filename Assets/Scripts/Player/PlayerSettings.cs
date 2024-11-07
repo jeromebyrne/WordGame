@@ -26,6 +26,16 @@ public class PlayerSettings : MonoBehaviour
         PlayerPrefs.SetInt("board_dimensions_columns", dimensions.Column);
     }
 
+    public static string GetPlayerName(int playerIndex)
+    {
+        return PlayerPrefs.GetString("player_" + playerIndex.ToString() + "_name", "Player " + playerIndex.ToString());
+    }
+
+    public static void SetPlayerName(int playerIndex, string name)
+    {
+        PlayerPrefs.SetString("player_" + playerIndex.ToString() + "_name", name);
+    }
+
     public static void DeleteSettings()
     {
         PlayerPrefs.DeleteAll();

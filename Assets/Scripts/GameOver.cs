@@ -42,7 +42,7 @@ public class GameOver : MonoBehaviour
 
         if (!isDraw)
         {
-            _winnerPlayerNameLabel.text = "Player " + highestScorePlayerIndex;
+            _winnerPlayerNameLabel.text = PlayerSettings.GetPlayerName(highestScorePlayerIndex);
             _winnerPlayerNameLabel.color = playerColors[highestScorePlayerIndex - 1];
             _winnerScoreLabel.text = highestScore.ToString();
             _winnerScoreLabel.color = playerColors[highestScorePlayerIndex - 1];
@@ -68,7 +68,7 @@ public class GameOver : MonoBehaviour
         {
             _bestWordLabel.text = bestScoringWord.ToUpper();
             _bestWordLabel.color = playerColors[bestWordPlayerIndex - 1];
-            _bestWordPlayerLabel.text = "Player " + bestWordPlayerIndex;
+            _bestWordPlayerLabel.text =  PlayerSettings.GetPlayerName(bestWordPlayerIndex);
             _bestWordPlayerLabel.color = playerColors[bestWordPlayerIndex - 1];
         }
     }
